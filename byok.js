@@ -19,109 +19,199 @@
 
   const STORAGE_KEY = 'det-byok-config';
 
+  // region: local | cn | intl | custom — used for grouping in settings modal
+  // setupSteps: terse 2-line guide (注册 + 拿 key 粘贴), 充值流程让平台自己引导
   const PROVIDERS = {
     local: {
       name: 'Local Claude CLI',
-      tag: '本地 CLI · 订阅免费 · 支持 Claude Code 或 Codex（DET_CLI=codex）',
+      tag: '订阅免费',
+      region: 'local',
       requiresKey: false,
       docs: 'https://docs.claude.com/en/docs/claude-code',
     },
+
+    // ====== 🇨🇳 国内站 ======
     deepseek: {
       name: 'DeepSeek',
-      tag: '🇨🇳 国内 · 微信/支付宝充值 · 5 元够批 1000+ 次 · 推荐',
+      tag: '推荐 · 便宜',
+      region: 'cn',
       requiresKey: true,
       apiBase: 'https://api.deepseek.com/v1/chat/completions',
       defaultModel: 'deepseek-chat',
-      keyHint: 'sk-...（在 platform.deepseek.com 申请）',
+      keyHint: 'sk-...',
       docs: 'https://platform.deepseek.com/api_keys',
       flavor: 'openai',
       setupSteps: [
-        '打开 <a href="https://platform.deepseek.com" target="_blank">platform.deepseek.com</a>，用微信或手机号注册',
-        '左上角「充值」→ 充 5 元（够批 1000+ 篇作文）',
-        '左侧菜单「API Keys」→「创建 API key」→ 起名字 → 创建',
-        '<b>立刻复制 key</b>（关掉窗口就再也看不到完整 key 了）',
-        '回到这里，把 key 粘贴到上面的「API Key」框 → 点保存',
+        '去 <a href="https://platform.deepseek.com/api_keys" target="_blank">platform.deepseek.com</a> 注册 → 创建 API Key → 复制粘贴到上面',
       ],
     },
     kimi: {
-      name: 'Kimi (Moonshot)',
-      tag: '🇨🇳 国内 · 长上下文 · 中文写作好',
+      name: 'Kimi 国内 (Moonshot.cn)',
+      tag: '长上下文',
+      region: 'cn',
       requiresKey: true,
       apiBase: 'https://api.moonshot.cn/v1/chat/completions',
       defaultModel: 'moonshot-v1-32k',
-      keyHint: 'sk-...（在 platform.moonshot.cn 申请）',
+      keyHint: 'sk-...',
       docs: 'https://platform.moonshot.cn/console/api-keys',
       flavor: 'openai',
       setupSteps: [
-        '打开 <a href="https://platform.moonshot.cn" target="_blank">platform.moonshot.cn</a>，邮箱或扫码注册',
-        '右上角用户菜单 →「充值」→ 充 5-10 元（Kimi 比 DeepSeek 贵 ~10×）',
-        '「API Key 管理」→「新建」→ 复制 key',
-        '回到这里，粘贴到上面 API Key 框 → 点保存',
+        '去 <a href="https://platform.moonshot.cn/console/api-keys" target="_blank">platform.moonshot.cn</a> 注册 → 新建 API Key → 复制粘贴到上面',
       ],
     },
     qwen: {
-      name: 'Qwen (通义千问)',
-      tag: '🇨🇳 阿里云 · 首次有免费额度',
+      name: 'Qwen 国内 (通义千问)',
+      tag: '阿里云 · 有免费额度',
+      region: 'cn',
       requiresKey: true,
       apiBase: 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',
       defaultModel: 'qwen-plus',
-      keyHint: 'sk-...（在 bailian.console.aliyun.com 申请）',
+      keyHint: 'sk-...',
       docs: 'https://bailian.console.aliyun.com/?apiKey=1#/api-key',
       flavor: 'openai',
       setupSteps: [
-        '打开 <a href="https://bailian.console.aliyun.com" target="_blank">bailian.console.aliyun.com</a>，用阿里云账号登录（没有就注册）',
-        '左侧菜单「API-KEY」→「创建 API Key」→ 复制',
-        '阿里云账号通常自带百万 token 免费额度，不充钱也能用',
-        '回到这里，粘贴到上面 API Key 框 → 点保存',
+        '去 <a href="https://bailian.console.aliyun.com/?apiKey=1#/api-key" target="_blank">bailian.console.aliyun.com</a> 阿里云账号登录 → 创建 API Key → 复制粘贴到上面',
+      ],
+    },
+    glm: {
+      name: '智谱 GLM (BigModel)',
+      tag: 'GLM-4 · 有免费额度',
+      region: 'cn',
+      requiresKey: true,
+      apiBase: 'https://open.bigmodel.cn/api/paas/v4/chat/completions',
+      defaultModel: 'glm-4-plus',
+      keyHint: 'XXX.XXX 格式',
+      docs: 'https://open.bigmodel.cn/usercenter/proj-mgmt/apikeys',
+      flavor: 'openai',
+      setupSteps: [
+        '去 <a href="https://open.bigmodel.cn/usercenter/proj-mgmt/apikeys" target="_blank">open.bigmodel.cn</a> 注册 → API Keys → 添加 → 复制粘贴到上面',
+      ],
+    },
+
+    // ====== 🌍 海外站 ======
+    kimi_intl: {
+      name: 'Kimi 海外 (Moonshot.ai)',
+      tag: '海外站 · 与国内站账号不互通',
+      region: 'intl',
+      requiresKey: true,
+      apiBase: 'https://api.moonshot.ai/v1/chat/completions',
+      defaultModel: 'kimi-latest',
+      keyHint: 'sk-...',
+      docs: 'https://platform.moonshot.ai/console/api-keys',
+      flavor: 'openai',
+      setupSteps: [
+        '去 <a href="https://platform.moonshot.ai/console/api-keys" target="_blank">platform.moonshot.ai</a> 注册 → New API Key → 复制粘贴到上面',
+      ],
+    },
+    qwen_intl: {
+      name: 'Qwen 海外 (DashScope Intl)',
+      tag: '阿里云国际版 · 与国内账号不互通',
+      region: 'intl',
+      requiresKey: true,
+      apiBase: 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions',
+      defaultModel: 'qwen-plus',
+      keyHint: 'sk-...',
+      docs: 'https://modelstudio.console.alibabacloud.com/?apiKey=1#/api-key',
+      flavor: 'openai',
+      setupSteps: [
+        '去 <a href="https://modelstudio.console.alibabacloud.com/?apiKey=1#/api-key" target="_blank">modelstudio.console.alibabacloud.com</a> 注册 → 创建 API Key → 复制粘贴到上面',
       ],
     },
     anthropic: {
       name: 'Anthropic Claude',
-      tag: '⚠️ Claude Max/Pro 网页订阅不能用 · 需国际信用卡 · 效果最好',
+      tag: '效果最好',
+      region: 'intl',
       requiresKey: true,
       apiBase: 'https://api.anthropic.com/v1/messages',
       defaultModel: 'claude-sonnet-4-5-20250929',
-      keyHint: 'sk-ant-...（在 console.anthropic.com 申请）',
+      keyHint: 'sk-ant-...',
       docs: 'https://console.anthropic.com/settings/keys',
       flavor: 'anthropic',
       setupSteps: [
-        '⚠️ 需国际信用卡 + 可能要科学上网',
-        '<a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> 注册 → Plans & Billing → 充值至少 $5',
-        'API Keys → Create Key → 复制（sk-ant-... 开头）',
-        '回到这里，粘贴到上面 API Key 框 → 点保存',
+        '去 <a href="https://console.anthropic.com/settings/keys" target="_blank">console.anthropic.com</a> 注册 → Create Key → 复制粘贴到上面',
       ],
     },
     openai: {
       name: 'OpenAI',
-      tag: '⚠️ ChatGPT Plus/Pro 订阅不能用 · 需国际信用卡',
+      tag: 'GPT-4o / GPT-5',
+      region: 'intl',
       requiresKey: true,
       apiBase: 'https://api.openai.com/v1/chat/completions',
       defaultModel: 'gpt-4o',
-      keyHint: 'sk-...（在 platform.openai.com 申请）',
+      keyHint: 'sk-...',
       docs: 'https://platform.openai.com/api-keys',
       flavor: 'openai',
       setupSteps: [
-        '⚠️ 需国际信用卡 + 科学上网',
-        '<a href="https://platform.openai.com" target="_blank">platform.openai.com</a> 登录 → Billing → 充值至少 $5',
-        'API Keys → Create new secret key → 复制',
-        '回到这里，粘贴到上面 API Key 框 → 点保存',
+        '去 <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com</a> 登录 → Create new secret key → 复制粘贴到上面',
       ],
     },
+    gemini: {
+      name: 'Google Gemini',
+      tag: '有免费额度（每天 1500 次）',
+      region: 'intl',
+      requiresKey: true,
+      apiBase: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
+      defaultModel: 'gemini-2.5-flash',
+      keyHint: 'AIza...',
+      docs: 'https://aistudio.google.com/app/apikey',
+      flavor: 'openai',
+      setupSteps: [
+        '去 <a href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com/app/apikey</a> Google 账号登录 → Create API key → 复制粘贴到上面',
+      ],
+    },
+    groq: {
+      name: 'Groq',
+      tag: '极快推理 · 免费有限速',
+      region: 'intl',
+      requiresKey: true,
+      apiBase: 'https://api.groq.com/openai/v1/chat/completions',
+      defaultModel: 'llama-3.3-70b-versatile',
+      keyHint: 'gsk_...',
+      docs: 'https://console.groq.com/keys',
+      flavor: 'openai',
+      setupSteps: [
+        '去 <a href="https://console.groq.com/keys" target="_blank">console.groq.com/keys</a> 登录 → Create API Key → 复制粘贴到上面',
+      ],
+    },
+    openrouter: {
+      name: 'OpenRouter',
+      tag: '一 key 通调所有模型',
+      region: 'intl',
+      requiresKey: true,
+      apiBase: 'https://openrouter.ai/api/v1/chat/completions',
+      defaultModel: 'anthropic/claude-3.5-sonnet',
+      keyHint: 'sk-or-...',
+      docs: 'https://openrouter.ai/keys',
+      flavor: 'openai',
+      setupSteps: [
+        '去 <a href="https://openrouter.ai/keys" target="_blank">openrouter.ai/keys</a> 注册 → Create Key → 复制粘贴到上面',
+        'Model 字段决定底层模型，例：<code>anthropic/claude-3.5-sonnet</code> / <code>openai/gpt-4o</code> / <code>google/gemini-2.5-pro</code>',
+      ],
+    },
+
+    // ====== ⚙️ 自定义 ======
     custom: {
       name: 'OpenAI 兼容（自定义）',
-      tag: 'Ollama 本地 / Together.ai / Groq / 智谱 等',
+      tag: 'Ollama / 火山引擎 / 其他',
+      region: 'custom',
       requiresKey: true,
       defaultModel: '',
       keyHint: '任意 OpenAI 兼容 endpoint 的 key',
       flavor: 'openai',
       customizable: true,
       setupSteps: [
-        '适用于：本地 Ollama、Together.ai、Groq、智谱 GLM 等任意 OpenAI 兼容服务',
-        '需要你手动填 API Endpoint URL + Model 名（去对应服务商网站查）',
-        '⚠️ Vercel 网页版无法访问 http://localhost（mixed content 拦截）',
+        '手动填 API Endpoint URL + Model 名（去对应服务商网站查）',
+        '⚠️ Vercel 网页版无法访问 <code>http://localhost</code>（mixed content 拦截）',
       ],
     },
   };
+
+  const REGIONS = [
+    { id: 'local',  title: '💻 本地 CLI' },
+    { id: 'cn',     title: '🇨🇳 国内站' },
+    { id: 'intl',   title: '🌍 海外站' },
+    { id: 'custom', title: '⚙️ 自定义' },
+  ];
 
   function getCfg() {
     try {
@@ -1250,12 +1340,12 @@ ${rewrittenAnswer}
     `;
 
     const visibleProviders = _hostedMode
-      ? Object.entries(PROVIDERS).filter(([key]) => key !== 'local')
+      ? Object.entries(PROVIDERS).filter(([, p]) => p.region !== 'local')
       : Object.entries(PROVIDERS);
-    const providerOptions = visibleProviders.map(([key, p]) => {
+    const renderProvider = ([key, p]) => {
       const checked = cfg.provider === key ? 'checked' : '';
       return `
-        <label style="display: block; padding: 10px 12px; border: 1.5px solid var(--ink-4, #c9c2b6); border-radius: 8px; margin-bottom: 8px; cursor: pointer; background: ${cfg.provider === key ? 'var(--accent-soft, #fbe7d6)' : 'transparent'};" data-provider-row="${key}">
+        <label style="display: block; padding: 10px 12px; border: 1.5px solid var(--ink-4, #c9c2b6); border-radius: 8px; margin-bottom: 6px; cursor: pointer; background: ${cfg.provider === key ? 'var(--accent-soft, #fbe7d6)' : 'transparent'};" data-provider-row="${key}">
           <div style="display: flex; align-items: center; gap: 10px;">
             <input type="radio" name="byok-provider" value="${key}" ${checked} style="margin: 0;">
             <div style="flex: 1;">
@@ -1264,6 +1354,13 @@ ${rewrittenAnswer}
             </div>
           </div>
         </label>`;
+    };
+    const providerOptions = REGIONS.map(region => {
+      const inRegion = visibleProviders.filter(([, p]) => p.region === region.id);
+      if (!inRegion.length) return '';
+      return `
+        <div style="font-size: 11px; font-weight: 700; color: var(--ink-3, #8a8378); margin: 14px 0 6px; padding-bottom: 4px; border-bottom: 1px dashed var(--ink-4, #c9c2b6); letter-spacing: 0.5px;">${region.title}</div>
+        ${inRegion.map(renderProvider).join('')}`;
     }).join('');
 
     modal.innerHTML = `
