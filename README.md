@@ -6,6 +6,8 @@
 
 🌐 **在线试用（无需安装）**：[det-scriba.vercel.app](https://det-scriba.vercel.app) — 自带 API key（推荐 [DeepSeek](https://platform.deepseek.com/api_keys)，5 块够批 1000+ 次）即可使用。
 
+> 🔒 **关于 API Key**：BYOK 模式下你的 API key 仅存在浏览器 localStorage。LLM 调用通过本站的 [Serverless Proxy](https://github.com/Lfrangt/DET-scriba/blob/main/api/llm-proxy.js) 一次性透传到 LLM 服务器（绕开浏览器 CORS 限制），**代码开源、不存储、不打印**。
+
 ## Demo
 
 TODO: 加截图
