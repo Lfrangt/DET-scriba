@@ -240,11 +240,17 @@
       font-family: 'JetBrains Mono', monospace;
     }
     .markdown blockquote {
-      border-left: 3px solid var(--accent);
-      padding: .5rem 1rem;
+      border-left: 3px solid var(--ink-4);
+      padding: 0 0 0 12px;
       margin: .75rem 0;
+      color: var(--ink-2);
+    }
+    /* 真正想强调的引用，加 .accent 类 */
+    .markdown blockquote.accent {
+      border-left-color: var(--accent);
       background: var(--accent-soft);
       color: var(--accent-ink);
+      padding: .5rem 1rem;
     }
     .markdown hr { margin: 1.25rem 0; border: 0; border-top: 1px solid var(--ink-4); }
 

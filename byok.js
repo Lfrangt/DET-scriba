@@ -1326,17 +1326,13 @@ ${rewrittenAnswer}
     if (document.getElementById('byok-modal-backdrop')) return;
     const cfg = getCfg();
 
-    // Build preset options for the dropdown (filtered for hosted mode)
+    // Flat preset dropdown (no region grouping)
     const presetEntries = _hostedMode
       ? Object.entries(PROVIDERS).filter(([, p]) => p.region !== 'local')
       : Object.entries(PROVIDERS);
-    const presetGroups = REGIONS.map(region => {
-      const inRegion = presetEntries.filter(([, p]) => p.region === region.id);
-      if (!inRegion.length) return '';
-      return `<optgroup label="${region.title}">${inRegion.map(([key, p]) =>
-        `<option value="${key}" ${cfg.provider === key ? 'selected' : ''}>${p.name}</option>`
-      ).join('')}</optgroup>`;
-    }).join('');
+    const presetOptions = presetEntries.map(([key, p]) =>
+      `<option value="${key}" ${cfg.provider === key ? 'selected' : ''}>${p.name}</option>`
+    ).join('');
 
     const backdrop = document.createElement('div');
     backdrop.id = 'byok-modal-backdrop';
@@ -1350,84 +1346,73 @@ ${rewrittenAnswer}
     modal.style.cssText = `
       background: var(--paper, #fafaf6); border: 1.5px solid var(--ink, #1a1814);
       border-radius: 12px; box-shadow: 4px 6px 0 rgba(26,24,20,0.15);
-      max-width: 480px; width: 100%; max-height: 88vh; overflow: auto;
-      padding: 22px; font-family: 'PingFang SC', system-ui, sans-serif;
+      max-width: 420px; width: 100%; max-height: 88vh; overflow: auto;
+      padding: 20px; font-family: 'PingFang SC', system-ui, sans-serif;
       color: var(--ink, #1a1814);
     `;
 
     const inputStyle = 'width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1.5px solid var(--ink-4, #c9c2b6); border-radius: 6px; font-family: \'JetBrains Mono\', monospace; font-size: 12px; background: var(--paper, #fafaf6); color: var(--ink, #1a1814);';
-    const labelStyle = 'display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px;';
-    const sectionTitle = 'font-size: 11px; font-weight: 700; color: var(--ink-3, #8a8378); margin: 0 0 8px; padding-bottom: 4px; border-bottom: 1px dashed var(--ink-4, #c9c2b6); letter-spacing: 0.5px; text-transform: uppercase;';
+    const labelStyle = 'display: block; font-size: 11px; font-weight: 600; margin-bottom: 4px; color: var(--ink-2, #524b41);';
 
     const initialProvider = PROVIDERS[cfg.provider];
     const isLocalProvider = cfg.provider === 'local';
 
     modal.innerHTML = `
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
-        <div style="font-weight: 700; font-size: 18px;">⚙️ 设置</div>
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+        <div style="font-weight: 700; font-size: 17px;">⚙️ 设置</div>
         <button id="byok-close" style="all: unset; cursor: pointer; font-size: 20px; color: var(--ink-3, #8a8378); padding: 4px 8px;">×</button>
       </div>
 
       <!-- 个性化 -->
-      <div style="margin-bottom: 18px;">
-        <div style="${sectionTitle}">个性化（让 AI 按你的水平定制批改）</div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-          <div>
-            <label style="${labelStyle}">当前 DET Writing 分</label>
-            <input type="number" id="byok-current" value="${cfg.currentLevel}" min="50" max="160" step="5" style="${inputStyle}">
-          </div>
-          <div>
-            <label style="${labelStyle}">想达到的目标分</label>
-            <input type="number" id="byok-target" value="${cfg.targetLevel}" min="60" max="160" step="5" style="${inputStyle}">
-          </div>
-        </div>
-        <div style="font-size: 11px; color: var(--ink-3, #8a8378); margin-top: 6px;">范围 50-160（DET 满分 160）。AI 会按这两个分数调整改写难度、词汇深度、目标距离。</div>
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 14px; padding: 10px 12px; background: var(--paper-2, #f3efe6); border-radius: 6px;">
+        <span style="font-size: 11px; color: var(--ink-3, #8a8378); white-space: nowrap;">我现在</span>
+        <input type="number" id="byok-current" value="${cfg.currentLevel}" min="50" max="160" step="5" style="${inputStyle}; padding: 6px 8px; width: 60px; text-align: center;">
+        <span style="color: var(--ink-3, #8a8378);">→</span>
+        <span style="font-size: 11px; color: var(--ink-3, #8a8378); white-space: nowrap;">想达到</span>
+        <input type="number" id="byok-target" value="${cfg.targetLevel}" min="60" max="160" step="5" style="${inputStyle}; padding: 6px 8px; width: 60px; text-align: center;">
+        <span style="font-size: 11px; color: var(--ink-3, #8a8378);">分</span>
       </div>
 
-      <!-- AI 接入 -->
-      <div style="margin-bottom: 14px;">
-        <div style="${sectionTitle}">AI 接入</div>
-
-        <label style="${labelStyle}">快速预设（选完自动填下面 URL/Model）</label>
-        <select id="byok-preset" style="${inputStyle}; padding: 8px 10px; cursor: pointer;">
-          ${presetGroups}
+      <!-- AI 服务 + API Key -->
+      <div style="margin-bottom: 10px;">
+        <label style="${labelStyle}">AI 服务</label>
+        <select id="byok-preset" style="${inputStyle}; cursor: pointer;">
+          ${presetOptions}
         </select>
+      </div>
+
+      <div id="byok-key-wrap" style="display: ${isLocalProvider ? 'none' : 'block'}; margin-bottom: 8px;">
+        <label style="${labelStyle}">API Key</label>
+        <div style="display: flex; gap: 6px;">
+          <input type="password" id="byok-key" value="${(cfg.apiKey || '').replace(/"/g, '&quot;')}"
+                 placeholder="${initialProvider?.keyHint || 'sk-...'}"
+                 style="flex: 1; padding: 8px 10px; border: 1.5px solid var(--ink-4, #c9c2b6); border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 12px; background: var(--paper, #fafaf6); color: var(--ink, #1a1814);">
+          <button id="byok-toggle-key" type="button" style="padding: 8px 10px; border: 1.5px solid var(--ink-4, #c9c2b6); background: transparent; border-radius: 6px; cursor: pointer; font-size: 11px;">👁</button>
+        </div>
         <div id="byok-docs-line" style="font-size: 11px; margin-top: 4px; display: ${initialProvider?.docs ? 'block' : 'none'};">
-          <a id="byok-docs-link" href="${initialProvider?.docs || '#'}" target="_blank" style="color: var(--accent-ink, #8b3d10); text-decoration: underline;">→ 在哪申请 ${initialProvider?.name || ''} key</a>
+          <a id="byok-docs-link" href="${initialProvider?.docs || '#'}" target="_blank" style="color: var(--accent-ink, #8b3d10); text-decoration: underline;">→ 在哪申请 key</a>
         </div>
       </div>
 
-      <div id="byok-fields" style="display: ${isLocalProvider ? 'none' : 'block'};">
-        <div style="margin-bottom: 12px;">
+      <details id="byok-advanced-wrap" style="margin-bottom: 14px; ${isLocalProvider ? 'display: none;' : ''}">
+        <summary style="cursor: pointer; font-size: 11px; color: var(--ink-3, #8a8378); padding: 6px 0; user-select: none;">高级设置（自定义 endpoint / model）</summary>
+        <div style="margin-top: 8px;">
           <label style="${labelStyle}">API Endpoint URL</label>
           <input type="text" id="byok-apibase" value="${(cfg.apiBase || initialProvider?.apiBase || '').replace(/"/g, '&quot;')}"
                  placeholder="https://api.example.com/v1/chat/completions"
-                 style="${inputStyle}">
-        </div>
-
-        <div style="margin-bottom: 12px;">
-          <label style="${labelStyle}">API Key</label>
-          <div style="display: flex; gap: 6px;">
-            <input type="password" id="byok-key" value="${(cfg.apiKey || '').replace(/"/g, '&quot;')}"
-                   placeholder="${initialProvider?.keyHint || 'sk-...'}"
-                   style="flex: 1; padding: 8px 10px; border: 1.5px solid var(--ink-4, #c9c2b6); border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 12px; background: var(--paper, #fafaf6); color: var(--ink, #1a1814);">
-            <button id="byok-toggle-key" type="button" style="padding: 8px 10px; border: 1.5px solid var(--ink-4, #c9c2b6); background: transparent; border-radius: 6px; cursor: pointer; font-size: 11px;">👁</button>
-          </div>
-        </div>
-
-        <div style="margin-bottom: 14px;">
-          <label style="${labelStyle}">Model（留空用预设默认）</label>
+                 style="${inputStyle}; margin-bottom: 8px;">
+          <label style="${labelStyle}">Model（留空用默认）</label>
           <input type="text" id="byok-model" value="${(cfg.model || '').replace(/"/g, '&quot;')}"
                  placeholder="${initialProvider?.defaultModel || ''}"
                  style="${inputStyle}">
         </div>
-      </div>
+      </details>
 
-      <div id="byok-test-result" style="font-size: 12px; margin-bottom: 12px; min-height: 18px;"></div>
+      <div id="byok-test-result" style="font-size: 12px; margin-bottom: 10px; min-height: 16px;"></div>
 
       <div style="display: flex; gap: 8px; justify-content: flex-end;">
-        <button id="byok-test" type="button" style="padding: 8px 14px; border: 1.5px solid var(--ink, #1a1814); background: transparent; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500;">🔌 测试连接</button>
-        <button id="byok-save" type="button" style="padding: 8px 14px; border: 1.5px solid var(--ink, #1a1814); background: var(--ink, #1a1814); color: var(--paper, #fafaf6); border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;">💾 保存</button>
+        <button id="byok-test" type="button" style="padding: 7px 12px; border: 1.5px solid var(--ink, #1a1814); background: transparent; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500;">🔌 测试</button>
+        <button id="byok-save" type="button" style="padding: 7px 14px; border: 1.5px solid var(--ink, #1a1814); background: var(--ink, #1a1814); color: var(--paper, #fafaf6); border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">💾 保存</button>
       </div>
     `;
 
@@ -1444,7 +1429,8 @@ ${rewrittenAnswer}
       const p = PROVIDERS[provider];
       if (!p) return;
       const isLocal = provider === 'local';
-      $$('byok-fields').style.display = isLocal ? 'none' : 'block';
+      $$('byok-key-wrap').style.display = isLocal ? 'none' : 'block';
+      $$('byok-advanced-wrap').style.display = isLocal ? 'none' : 'block';
       if (!isLocal) {
         $$('byok-apibase').value = p.apiBase || '';
         $$('byok-apibase').placeholder = p.apiBase || 'https://api.example.com/v1/chat/completions';
