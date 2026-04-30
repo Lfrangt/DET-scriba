@@ -1,0 +1,205 @@
+                【登登DET】听写句子 · 难题100词
+词汇                释义      词性     题号
+accomplish        实现      v      1899
+
+agricultural      农业的     adj    1936
+
+approximately     大约地     adv    1936
+
+audio             音频      n      2546
+
+automobile        汽车      n      1837
+
+biodiversity      生物多样性   n      1443
+
+boast             标榜      v      2334
+
+branch            分支      n      2161
+
+budget            预算      n      2270
+
+calligrapher      书法家     n      2501
+
+capable           有能力的    adj    2155
+
+celery            芹菜      n      2110
+
+ceramic           陶瓷      n      1432
+
+chaste            纯洁的     adj    2033
+
+circuit           电路      n      1369
+
+combat            战斗      n      2155
+
+combinatorial     组合的     adj    2161
+
+component         部分      n      1704
+
+concrete          混凝土     n      1432
+
+condenser         冷凝器     n      2408
+
+consumption       摄入      n      1547
+
+contradictory     相互矛盾的   adj    2299
+
+contribute        贡献      v      2110
+
+coup              政变      n      2046
+
+credit            认为      v      1743
+
+critical          批判性的    adj    1310
+
+culinary          烹调用的    adj    2586
+
+curd              凝乳      n      2385
+
+customary         通常的     adj    1310
+dairy            奶制品的    adj   2385
+
+debate           争论      v     2535
+
+defend           保卫      v     1423
+
+deficit          赤字      n     2270
+
+degraded         退化了的    adj   1936
+
+democratically   民主地     adv   2459
+
+diabolic         残忍的     adj   2457
+
+discipline       学科      n     1649
+
+discrete         离散的     adj   2161
+
+distinguish      区分      v     1310
+
+elaborate        精心制作的   adj   2258
+
+elected          选举出的    adj   2459
+
+electoral        选举的     adj   2457
+
+electron         电子      n     1369
+
+ethanol          酒精      n     1547
+
+evaporate        蒸发      v     1588
+
+evaporation      蒸发      n     1786
+
+falsetto         假音      n     1487
+
+flow             流       n     1369
+
+flux             焊剂      n     1588
+
+formation        组建      n     2079
+
+gladiatorial     斗剑者的    adj   2155
+
+grip             抓握方式    n     2501
+
+herbivores       食草动物    n     1423
+
+implication      可能的影响   n     2535
+
+inquiry          调查      n     1740
+
+intimacy         亲密关系    n     2033
+
+intoxicating     醉酒的     adj   1547
+
+medicinal        药用的     adj   1443
+
+meringue         蛋白霜     n     2385
+
+nanotechnology   纳米技术    n     2535
+
+notable          著名的     adj   2385
+occupational     职业的       adj   1854
+
+opera            歌剧        n     2546
+
+organism         微生物       n     2204
+
+outsourcing      外包        n     1899
+
+pattern          模式        n     2467
+
+pest             害虫        n     1685
+
+pesticide        农药, 杀虫剂   n     1685
+
+pharmaceutical   药物        n     1837
+
+philosophy       哲学        n     1854
+
+prayer           祷告        n     2295
+
+precipitation    降水        n     1786
+
+premise          前提        n     2095
+
+proceed          收入        n     2270
+
+profession       专业        n     1854
+
+protagonist      主人公       n     2033
+
+pylon            桥塔        n     1704
+
+quest            探求        n     1791
+
+reconstruct      重新组装      v     2464
+
+release          发布        v     2546
+
+reputation       声誉        n     1939
+
+rhythm           节奏        n     2467
+
+route            线路        n     2497
+
+sacrifice        供奉        n     2295
+
+scene            局面        n     1743
+
+script           手迹        n     2501
+
+sculpture        雕塑        n     2334
+
+sector           部门        n     2371
+
+shrine           神龛        n     2258
+
+simulate         模仿        v     1892
+
+soprano          女高音       n     1487
+
+spectator        观众        n     2155
+
+speculative      思辨性的      adj   1310
+spinning       纺织的    adj   2464
+
+steel          钢铁     n     1837
+
+subcontinent   次大陆    n     2586
+
+supply         供给     n     2110
+
+temple         寺庙     n     2295
+
+textile        纺织     n     1837
+
+therapy        疗法     n     1854
+
+valid          有效的    adj   2095
+
+vapor          蒸汽     n     2408
+
+welding        焊接过程   n     1588
+

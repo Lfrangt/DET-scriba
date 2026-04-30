@@ -1,0 +1,2384 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📝 DET 写作精批</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="./byok.js"></script>
+  <style>
+    :root {
+      --ink: #1a1814;
+      --ink-2: #524b41;
+      --ink-3: #8a8378;
+      --ink-4: #c9c2b6;
+      --paper: #fafaf6;
+      --paper-2: #f3efe6;
+      --paper-line: #e6e0d2;
+      --accent: #d96b2b;
+      --accent-soft: #fbe7d6;
+      --accent-ink: #8b3d10;
+      --good: #2f7a4a;
+      --bad: #b3382b;
+      --warn: #c08b1a;
+    }
+
+    html, body { margin: 0; padding: 0; background: #f0eee9; color: var(--ink); }
+    body {
+      font-family: 'PingFang SC', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .font-script { font-family: 'Caveat', cursive; }
+    .font-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+    .tnum { font-variant-numeric: tabular-nums; }
+
+    .wf-card {
+      background: var(--paper);
+      border: 1.5px solid var(--ink);
+      border-radius: 10px;
+      box-shadow: 2px 3px 0 rgba(26,24,20,0.08);
+      padding: 16px;
+    }
+    .wf-card.soft {
+      border-color: var(--ink-4);
+      box-shadow: 1px 2px 0 rgba(26,24,20,0.04);
+    }
+    .wf-card.dashed {
+      border-style: dashed;
+      border-color: var(--ink-3);
+      box-shadow: none;
+      background: transparent;
+    }
+    .wf-card.accent {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .wf-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1.5px solid var(--ink);
+      border-radius: 8px;
+      padding: 6px 12px;
+      background: var(--paper);
+      font-size: 14px;
+      box-shadow: 2px 2px 0 var(--ink);
+      cursor: pointer;
+      color: var(--ink);
+      font-family: inherit;
+      transition: transform .08s, box-shadow .08s;
+    }
+    .wf-btn:hover:not(:disabled) { transform: translate(-1px,-1px); box-shadow: 3px 3px 0 var(--ink); }
+    .wf-btn:active:not(:disabled) { transform: translate(1px,1px); box-shadow: 1px 1px 0 var(--ink); }
+    .wf-btn.solid { background: var(--ink); color: var(--paper); }
+    .wf-btn.accent {
+      background: var(--accent);
+      border-color: var(--accent-ink);
+      color: white;
+      box-shadow: 2px 2px 0 var(--accent-ink);
+    }
+    .wf-btn.accent:hover:not(:disabled) { box-shadow: 3px 3px 0 var(--accent-ink); }
+    .wf-btn.accent:active:not(:disabled) { box-shadow: 1px 1px 0 var(--accent-ink); }
+    .wf-btn.ghost {
+      box-shadow: none;
+      border-style: dashed;
+      color: var(--ink-2);
+    }
+    .wf-btn.ghost:hover:not(:disabled) { box-shadow: none; transform: none; background: var(--paper-2); }
+    .wf-btn:disabled { opacity: .5; cursor: not-allowed; }
+    .wf-btn.tiny { padding: 3px 8px; font-size: 12px; box-shadow: 1px 1px 0 var(--ink); }
+
+    .wf-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      border: 1.25px solid var(--ink);
+      border-radius: 999px;
+      padding: 3px 10px;
+      font-size: 13px;
+      background: var(--paper);
+      cursor: default;
+    }
+    .wf-pill.solid { background: var(--ink); color: var(--paper); }
+    .wf-pill.accent { background: var(--accent); color: white; border-color: var(--accent); }
+    .wf-pill.ghost { border-style: dashed; color: var(--ink-3); }
+    .wf-pill.click { cursor: pointer; transition: background .1s; }
+    .wf-pill.click:hover { background: var(--paper-2); }
+
+    .wf-tag {
+      font-size: 11px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .wf-input, .wf-textarea, .wf-select {
+      border: 1.5px solid var(--ink);
+      border-radius: 8px;
+      background: var(--paper);
+      padding: 8px 12px;
+      font-size: 14px;
+      width: 100%;
+      box-sizing: border-box;
+      font-family: inherit;
+      color: var(--ink);
+    }
+    .wf-input:focus, .wf-textarea:focus, .wf-select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+    .wf-textarea {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      line-height: 1.7;
+      resize: vertical;
+    }
+    .wf-select { appearance: none; background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%231a1814' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; }
+
+    .wf-rule { border: 0; border-top: 1.5px solid var(--ink); margin: 12px 0; }
+    .wf-rule.thin { border-top: 1px solid var(--ink-4); }
+    .wf-rule.dashed { border-top: 1.5px dashed var(--ink-3); }
+
+    .wf-callout {
+      background: var(--accent-soft);
+      border: 1.5px dashed var(--accent);
+      color: var(--accent-ink);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+
+    .wf-uline {
+      background-image: linear-gradient(transparent 60%, var(--accent-soft) 60%, var(--accent-soft) 90%, transparent 90%);
+      padding: 0 2px;
+    }
+
+    .wf-anno {
+      font-family: 'Caveat', cursive;
+      font-size: 16px;
+      color: var(--accent-ink);
+      font-weight: 600;
+      line-height: 1.15;
+    }
+
+    /* Mode segmented */
+    .mode-seg {
+      display: inline-flex;
+      border: 1.5px solid var(--ink);
+      border-radius: 8px;
+      padding: 2px;
+      background: var(--paper);
+    }
+    .mode-seg-btn {
+      padding: 5px 12px;
+      font-size: 13px;
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--ink-2);
+      background: transparent;
+      border: 0;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+    .mode-seg-btn.active { background: var(--ink); color: var(--paper); font-weight: 700; }
+    .mode-seg-btn:disabled { color: var(--ink-4); cursor: not-allowed; }
+
+    /* Markdown */
+    .markdown { line-height: 1.7; color: var(--ink); }
+    .markdown h1 { font-size: 1.4rem; font-weight: 700; margin: 1.25rem 0 .6rem; color: var(--ink); }
+    .markdown h2 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin: 1.4rem 0 .5rem;
+      color: var(--accent-ink);
+      border-bottom: 1.5px solid var(--ink);
+      padding-bottom: .25rem;
+    }
+    .markdown h3 { font-size: 1rem; font-weight: 600; margin: 1rem 0 .4rem; color: var(--ink); }
+    .markdown p { margin: .5rem 0; }
+    .markdown ul, .markdown ol { margin: .5rem 0 .5rem 1.4rem; }
+    .markdown li { margin: .25rem 0; }
+    .markdown table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: .75rem 0;
+      font-size: .9rem;
+      border: 1.5px solid var(--ink);
+    }
+    .markdown th, .markdown td {
+      border: 1px solid var(--ink-4);
+      padding: .5rem .7rem;
+      text-align: left;
+    }
+    .markdown th { background: var(--paper-2); font-weight: 600; color: var(--ink); }
+    .markdown tr:nth-child(even) { background: var(--paper-2); }
+    .markdown strong { color: var(--accent-ink); font-weight: 600; }
+    .markdown sup {
+      color: var(--ink-3);
+      font-size: .65em;
+      font-weight: 400;
+      vertical-align: super;
+      line-height: 0;
+      margin-left: 1px;
+      margin-right: 2px;
+      font-family: 'PingFang SC', system-ui, sans-serif;
+    }
+    .markdown code {
+      background: var(--paper-2);
+      padding: .1rem .4rem;
+      border-radius: 4px;
+      font-size: .9em;
+      border: 1px solid var(--ink-4);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .markdown blockquote {
+      border-left: 3px solid var(--accent);
+      padding: .5rem 1rem;
+      margin: .75rem 0;
+      background: var(--accent-soft);
+      color: var(--accent-ink);
+    }
+    .markdown hr { margin: 1.25rem 0; border: 0; border-top: 1px solid var(--ink-4); }
+
+    .loading-dots::after { content: '⏳'; animation: blink 1s infinite; }
+    @keyframes blink { 50% { opacity: .3; } }
+
+    .score-glow { text-shadow: 0 0 30px currentColor; }
+
+    /* Layout helpers */
+    .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .row.tight { gap: 4px; }
+
+    /* Header progress bar */
+    .progress-track {
+      height: 6px;
+      background: var(--paper-2);
+      border: 1px solid var(--ink-4);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      transition: width .4s ease;
+    }
+
+    /* Resource buttons */
+    .res-btn {
+      text-align: left;
+      background: var(--paper);
+      border: 1.5px solid var(--ink-4);
+      border-radius: 8px;
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: all .1s;
+      font-family: inherit;
+      color: var(--ink);
+    }
+    .res-btn:hover { border-color: var(--ink); box-shadow: 2px 2px 0 var(--ink-4); }
+
+    /* Quick question pills */
+    .quick-q {
+      cursor: pointer;
+      transition: background .1s;
+    }
+    .quick-q:hover { background: var(--paper-2); }
+
+    /* Top 3 item */
+    .top3-item {
+      border-left: 3px solid var(--ink-4);
+      padding-left: 10px;
+      margin-top: 8px;
+    }
+    .top3-item .label { font-weight: 700; }
+    .top3-item .tip { font-size: 12px; color: var(--ink-3); margin-top: 2px; }
+
+    /* History row */
+    .hist-row {
+      display: grid;
+      grid-template-columns: 60px 1fr auto 24px;
+      gap: 12px;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--ink-4);
+      align-items: center;
+      cursor: pointer;
+      transition: background .1s;
+    }
+    .hist-row:hover { background: var(--paper-2); }
+    .hist-row:last-child { border-bottom: 0; }
+
+    /* Correction highlights — Chinese-teacher red ink style */
+    .fx-good {
+      background: rgba(217, 76, 59, 0.12);
+      color: #b3382b;
+      border-bottom: 2px solid #b3382b;
+      padding: 0 2px;
+      border-radius: 2px;
+      font-weight: 600;
+    }
+    .fx-bad {
+      color: var(--ink-3);
+      text-decoration: line-through;
+      text-decoration-color: var(--bad);
+      opacity: 0.75;
+    }
+    .fx-new {
+      background: rgba(192, 139, 26, 0.16);
+      color: #8a6a14;
+      border-bottom: 1.5px wavy var(--warn);
+      padding: 0 2px;
+      border-radius: 2px;
+    }
+
+    /* Animations */
+    .pulse-warn { animation: pulse 1s infinite; }
+    @keyframes pulse { 50% { opacity: .55; } }
+
+    /* Scrollbars subtle */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-thumb { background: var(--ink-4); border-radius: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+  </style>
+</head>
+<body>
+  <div class="max-w-[1400px] mx-auto" style="padding: 18px;">
+
+    <!-- ========== Header ========== -->
+    <header class="wf-card" style="display: grid; grid-template-columns: 1.1fr 1.5fr 1fr; gap: 18px; align-items: center; margin-bottom: 14px;">
+      <!-- Score + progress -->
+      <div>
+        <div class="wf-tag">📝 DET 写作精批</div>
+        <div style="display: flex; align-items: baseline; gap: 8px; margin-top: 4px;">
+          <span id="header-score" class="font-mono tnum" style="font-size: 32px; font-weight: 700; color: var(--accent-ink);">85</span>
+          <span style="font-size: 13px; color: var(--ink-3);">→ 115</span>
+          <span id="header-delta" class="font-mono tnum" style="font-size: 12px; color: var(--good); margin-left: 4px;"></span>
+        </div>
+        <div class="progress-track" style="margin-top: 6px;">
+          <div id="header-progress" class="progress-fill" style="width: 33%;"></div>
+        </div>
+        <div class="wf-anno" style="margin-top: 4px;">距 115 还差 <span id="header-gap">30</span> 分</div>
+      </div>
+
+      <!-- Trend SVG -->
+      <div>
+        <div class="wf-tag" id="trend-label">近期还没记录</div>
+        <svg id="trend-svg" width="320" height="80" style="display: block; margin-top: 4px;"></svg>
+      </div>
+
+      <!-- Countdown + encouragement -->
+      <div style="text-align: right;">
+        <div class="wf-tag">距考试</div>
+        <div style="margin-top: 2px;">
+          <span id="countdown-days" class="font-mono tnum" style="font-size: 22px; font-weight: 700;">63</span>
+          <span style="font-size: 13px; color: var(--ink-3);">天</span>
+        </div>
+        <div class="wf-anno" style="margin-top: 4px;">每天一篇 · 你做得到 ✦</div>
+      </div>
+    </header>
+
+    <!-- ========== Mode + Practice Strip ========== -->
+    <div class="wf-card" style="padding: 12px 16px; margin-bottom: 14px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; background: var(--paper-2);">
+      <div class="mode-seg" id="mode-seg">
+        <button class="mode-seg-btn active" data-mode="interview">🎤 写作面试</button>
+        <button class="mode-seg-btn" data-mode="interactive">💬 互动写作</button>
+        <button class="mode-seg-btn" data-mode="photo" disabled>🖼️ 看图写句</button>
+      </div>
+      <span style="color: var(--ink-4);">|</span>
+
+      <select id="difficulty" class="wf-select" style="width: auto;">
+        <option value="基础">⭐ 基础</option>
+        <option value="中等" selected>⭐⭐ 中等</option>
+        <option value="偏难">⭐⭐⭐ 偏难</option>
+      </select>
+
+      <select id="category" class="wf-select" style="width: auto;">
+        <option value="随机" selected>🎲 随机</option>
+        <option value="教育">📚 教育</option>
+        <option value="科技">💻 科技</option>
+        <option value="社会">🌍 社会</option>
+        <option value="环境">🌱 环境</option>
+        <option value="工作">💼 工作</option>
+        <option value="健康">🏥 健康</option>
+        <option value="政府">🏛️ 政府</option>
+      </select>
+
+      <button id="generate-prompt" class="wf-btn solid">🎲 出题</button>
+      <button id="start-timer" class="wf-btn accent" hidden>⏱️ 开始限时</button>
+      <button id="stop-timer" class="wf-btn ghost" hidden>停止</button>
+      <span id="practice-status" style="font-size: 13px; color: var(--ink-3);"></span>
+
+      <span id="timer-display" class="font-mono tnum" style="margin-left: auto; font-size: 22px; font-weight: 700; color: var(--ink-4);">--:--</span>
+    </div>
+
+    <!-- ========== Resources Panel ========== -->
+    <div class="wf-card soft" style="margin-bottom: 14px;">
+      <button id="toggle-resources" style="all: unset; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 4px 0;">
+        <span style="font-weight: 600; display: flex; align-items: center; gap: 8px;">
+          📚 学习资料（登登教育官方）
+          <span id="resources-count" class="wf-tag" style="font-weight: 400;"></span>
+        </span>
+        <span id="resources-arrow" style="color: var(--ink-3); transition: transform .2s;">▼</span>
+      </button>
+      <div id="resources-panel" hidden style="margin-top: 12px;">
+        <div id="resources-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px;"></div>
+        <div id="resource-viewer" hidden style="margin-top: 12px;" class="wf-card dashed">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+            <h3 id="resource-title" style="margin: 0; font-weight: 600;"></h3>
+            <div class="row tight">
+              <button id="resource-toggle-raw" class="wf-btn tiny ghost">📄 原文</button>
+              <button id="resource-copy" class="wf-btn tiny ghost">📋 复制</button>
+              <button id="close-resource" class="wf-btn tiny ghost">×</button>
+            </div>
+          </div>
+          <div id="resource-content" class="markdown" style="max-height: 600px; overflow-y: auto; padding: 16px; background: var(--paper); border: 1px solid var(--ink-4); border-radius: 6px;"></div>
+          <pre id="resource-raw" class="font-mono" hidden style="white-space: pre-wrap; font-size: 12px; max-height: 600px; overflow-y: auto; padding: 12px; background: var(--paper); border: 1px solid var(--ink-4); border-radius: 6px; line-height: 1.7; margin: 0;"></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== Top Row: Input + Teacher (focused on writing) ========== -->
+    <div id="main-grid" style="display: grid; grid-template-columns: 1.7fr 1fr; gap: 14px; margin-bottom: 14px; align-items: stretch;">
+
+      <!-- ====== Col 1: Input ====== -->
+      <div style="display: flex; flex-direction: column; gap: 14px; min-width: 0;">
+        <div class="wf-card">
+          <div class="wf-tag" style="margin-bottom: 8px;">📥 输入</div>
+
+          <label id="prompt-label" style="display: block; font-size: 13px; margin-bottom: 4px; color: var(--ink-2);">题目（Prompt）</label>
+          <textarea id="prompt" class="wf-textarea" rows="2" placeholder="Some jobs involve frequent travel or relocation..." style="margin-bottom: 10px;"></textarea>
+
+          <div id="part2-prompt-wrap" hidden>
+            <label style="display: block; font-size: 13px; margin-bottom: 4px; color: var(--ink-2);">Part 2 题目 <span class="wf-tag">提交 P1 后由 AI 生成</span></label>
+            <textarea id="prompt2" class="wf-textarea" rows="2" placeholder="(P1 提交后自动出 P2 题)" style="margin-bottom: 10px;"></textarea>
+          </div>
+
+          <label id="answer-label" style="display: flex; align-items: center; justify-content: space-between; font-size: 13px; margin-bottom: 4px; color: var(--ink-2);">
+            <span>你的答案（Answer）</span>
+            <span id="word-count" class="font-mono tnum" style="font-size: 12px; color: var(--ink-3);">0 词</span>
+          </label>
+          <textarea id="answer" class="wf-textarea" rows="10" placeholder="Paste your DET Writing Sample here..." style="margin-bottom: 10px;"></textarea>
+
+          <div id="part2-answer-wrap" hidden>
+            <label id="answer2-label" style="display: flex; align-items: center; justify-content: space-between; font-size: 13px; margin-bottom: 4px; color: var(--ink-2);">
+              <span>Part 2 答案 (3 min)</span>
+              <span id="word-count-2" class="font-mono tnum" style="font-size: 12px; color: var(--ink-3);">0 词</span>
+            </label>
+            <textarea id="answer2" class="wf-textarea" rows="6" placeholder="Part 2 答案..." style="margin-bottom: 10px;"></textarea>
+          </div>
+
+          <div class="row" style="gap: 8px;">
+            <button id="submit" class="wf-btn accent">🚀 精批</button>
+            <button id="clear" class="wf-btn ghost">清空</button>
+            <button id="example" class="wf-btn ghost">填充示例</button>
+            <span style="margin-left: auto; display: flex; align-items: center; gap: 6px;">
+              <span style="font-size: 12px; color: var(--ink-3);">范文级别</span>
+              <select id="model-level" class="wf-select" style="width: auto; padding: 4px 24px 4px 8px; font-size: 13px;">
+                <option value="95">⭐ 95</option>
+                <option value="105" selected>⭐⭐ 105</option>
+                <option value="115">🎯 115</option>
+                <option value="125">🚀 125</option>
+              </select>
+              <button id="generate-model" class="wf-btn">📘 看范文+讲解</button>
+            </span>
+          </div>
+          <div id="status" style="margin-top: 8px; font-size: 13px; color: var(--ink-3); min-height: 20px;"></div>
+        </div>
+      </div>
+
+      <!-- ====== Col 2: Teacher Rail (fills row height) ====== -->
+      <div id="teacher-rail" class="wf-card accent" style="display: flex; flex-direction: column; gap: 10px; min-width: 0; min-height: 0; overflow: hidden;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid var(--accent-ink); background: var(--paper); display: flex; align-items: center; justify-content: center; font-size: 18px;">👨‍🏫</div>
+          <div>
+            <div style="font-size: 14px; font-weight: 700; color: var(--accent-ink);">老师在线</div>
+            <div id="teacher-subtitle" style="font-size: 11px; color: var(--accent-ink); opacity: .7;">提交一篇精批，老师就来</div>
+          </div>
+        </div>
+
+        <div id="teacher-conversations" style="flex: 1; min-height: 120px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+          <div class="wf-card soft" style="padding: 10px; font-size: 12px;">
+            <div style="color: var(--ink-3); font-size: 10px; margin-bottom: 4px;">👨‍🏫 老师 · 待机中</div>
+            <div style="color: var(--ink-2);">先写一篇，我看完会给你重点反馈。然后随时追问。</div>
+          </div>
+        </div>
+
+        <div id="teacher-status" style="font-size: 12px; color: var(--accent-ink); min-height: 18px;"></div>
+
+        <div style="display: flex; gap: 6px;">
+          <input id="teacher-question" class="wf-input" type="text" placeholder="追问老师..." style="font-size: 13px; padding: 6px 10px;">
+          <button id="ask-teacher" class="wf-btn solid" style="padding: 6px 12px; font-size: 13px;">问</button>
+        </div>
+
+        <div class="row tight" style="gap: 4px;">
+          <span class="wf-pill ghost click quick-q" data-q="我这篇最严重的问题是什么？怎么 1 周内解决？" style="font-size: 11px; padding: 2px 8px;">最严重</span>
+          <span class="wf-pill ghost click quick-q" data-q="给我 5 个针对这题型最实用的高级句式，我能背下来" style="font-size: 11px; padding: 2px 8px;">5 个句式</span>
+          <span class="wf-pill ghost click quick-q" data-q="如果我只有 3 分钟，怎么写出比这个好的版本？" style="font-size: 11px; padding: 2px 8px;">3 min 救急</span>
+          <span class="wf-pill ghost click quick-q" data-q="我的语法错误模式是什么？怎么练才能根除？" style="font-size: 11px; padding: 2px 8px;">语法根除</span>
+          <span class="wf-pill ghost click quick-q" data-q="跟 115 比我还差几步？每步具体怎么练？" style="font-size: 11px; padding: 2px 8px;">115 之路</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== Score Report Card (成绩单 · full-width) ========== -->
+    <div id="scorecard" class="wf-card" hidden style="margin-bottom: 14px; padding: 0; overflow: hidden;">
+      <!-- Header strip with paper-stamp feel -->
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; background: var(--ink); color: var(--paper); border-bottom: 1.5px solid var(--ink);">
+        <div>
+          <div style="font-family: 'Caveat', cursive; font-size: 22px; font-weight: 700; line-height: 1;">DET 写作成绩单</div>
+          <div class="font-mono" style="font-size: 10px; color: var(--ink-4); letter-spacing: 0.08em; margin-top: 2px;">DUOLINGO ENGLISH TEST · WRITING REPORT</div>
+        </div>
+        <div style="text-align: right;">
+          <div id="scorecard-date" class="font-mono" style="font-size: 11px; color: var(--ink-4);"></div>
+          <div id="scorecard-delta" class="font-mono" style="font-size: 12px; font-weight: 700; margin-top: 2px;"></div>
+        </div>
+      </div>
+
+      <!-- Body: 2-column grid -->
+      <div style="display: grid; grid-template-columns: 1fr 1.3fr; gap: 0;">
+        <!-- LEFT: hero score + radar -->
+        <div style="padding: 24px; border-right: 1.5px solid var(--ink-4); display: flex; flex-direction: column; align-items: center; justify-content: center;">
+          <div id="score-display" style="text-align: center;">
+            <div class="font-mono tnum" style="font-size: 80px; font-weight: 700; color: var(--ink-4); line-height: 1;">—</div>
+            <div style="font-size: 12px; color: var(--ink-3); margin-top: 6px;">还未提交</div>
+          </div>
+          <svg id="sketch-radar" width="320" height="280" hidden style="display: block; margin-top: 12px;"></svg>
+        </div>
+
+        <!-- RIGHT: 7-dim breakdown + Top 3 -->
+        <div style="padding: 20px 24px;">
+          <div class="wf-tag" style="margin-bottom: 10px;">📊 7 维度评分</div>
+          <div id="scorecard-dims" style="display: flex; flex-direction: column; gap: 6px; font-size: 13px;"></div>
+
+          <hr class="wf-rule" style="margin: 16px 0;">
+
+          <div id="top3-panel" hidden>
+            <div class="wf-tag" style="margin-bottom: 8px;">⚡ 本篇下一步 · TOP 3</div>
+            <div id="top3-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer with delta + stamp -->
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 20px; background: var(--paper-2); border-top: 1px solid var(--ink-4); font-size: 11px; color: var(--ink-3);">
+        <span id="score-meta" class="font-mono"></span>
+        <span class="font-script" style="font-size: 16px; color: var(--accent-ink); transform: rotate(-2deg); display: inline-block;">— 老师批改 ✦</span>
+      </div>
+    </div>
+
+    <!-- ========== Detailed Analysis (full-width) ========== -->
+    <div id="output" class="wf-card soft" hidden style="margin-bottom: 14px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+        <div class="wf-tag">📋 详细分析</div>
+        <div class="row tight">
+          <button id="open-correction" class="wf-btn tiny accent">✏️ 改写订正</button>
+          <button id="export" class="wf-btn tiny ghost">⬇️ 导出</button>
+          <button id="save-history" class="wf-btn tiny ghost">💾 存档</button>
+          <button id="copy-rewrite" class="wf-btn tiny ghost">📋 复制 115 改写</button>
+        </div>
+      </div>
+      <div id="output-content" class="markdown" style=""></div>
+    </div>
+
+    <!-- ========== Correction Panel (full-width) ========== -->
+    <div id="correction-panel" class="wf-card" hidden style="margin-bottom: 14px; border-color: var(--bad); box-shadow: 2px 3px 0 rgba(179,56,43,0.15);">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+        <div class="wf-tag" style="color: var(--bad);">✏️ 改写订正 · 老师红笔模式</div>
+        <button id="close-correction" class="wf-btn tiny ghost">× 关闭</button>
+      </div>
+
+      <!-- INPUT MODE -->
+      <div id="correction-input">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <div>
+            <div class="wf-tag" style="margin-bottom: 6px;">📝 原文（参考精批中错误清单改写）</div>
+            <pre id="correction-original" class="font-mono" style="white-space: pre-wrap; padding: 10px; background: var(--paper-2); border: 1.5px solid var(--ink-4); border-radius: 6px; line-height: 1.7; font-size: 13px; max-height: 320px; overflow-y: auto; margin: 0;"></pre>
+            <div id="correction-errors" style="margin-top: 8px; padding: 8px 10px; background: var(--paper-2); border: 1px dashed var(--ink-3); border-radius: 6px; font-size: 12px; max-height: 220px; overflow-y: auto;"></div>
+          </div>
+          <div>
+            <div class="wf-tag" style="margin-bottom: 6px;">✏️ 你的改写</div>
+            <textarea id="correction-rewrite" class="wf-textarea" rows="14" placeholder="基于精批反馈，把原文改写一遍。修复语法/词汇/结构问题..."></textarea>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 6px;">
+              <span id="correction-word-count" class="font-mono" style="font-size: 12px; color: var(--ink-3);">0 词</span>
+              <div class="row tight">
+                <button id="copy-original-to-rewrite" class="wf-btn tiny ghost">↻ 复制原文</button>
+                <button id="submit-correction" class="wf-btn accent">✓ 提交订正</button>
+              </div>
+            </div>
+            <div id="correction-status" style="margin-top: 6px; font-size: 13px; color: var(--ink-3); min-height: 18px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RESULT MODE -->
+      <div id="correction-result" hidden>
+        <div id="correction-stats" style="margin-bottom: 14px; padding: 14px; background: var(--paper-2); border: 1.5px solid var(--ink); border-radius: 8px; text-align: center;"></div>
+        <div style="display: flex; gap: 16px; justify-content: center; align-items: center; margin-bottom: 12px; font-size: 12px; color: var(--ink-3);">
+          <span><span class="fx-good">✓ 正确修复</span></span>
+          <span><span class="fx-bad">仍然错误</span></span>
+          <span><span class="fx-new">引入新错误</span></span>
+        </div>
+        <div id="correction-content" class="markdown" style=""></div>
+        <div class="row" style="margin-top: 16px; justify-content: center; gap: 8px;">
+          <button id="restart-correction" class="wf-btn ghost">↻ 再改一版</button>
+          <button id="export-correction" class="wf-btn ghost">⬇️ 导出</button>
+          <button id="close-correction-2" class="wf-btn ghost">关闭</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== Model Essay (full-width) ========== -->
+    <div id="model-output" class="wf-card soft" hidden style="margin-bottom: 14px; border-color: var(--good);">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+        <div class="wf-tag" style="color: var(--good);">📘 范文 + 讲解</div>
+        <div class="row tight">
+          <button id="copy-model-essay" class="wf-btn tiny ghost">📋 复制范文</button>
+          <button id="export-model" class="wf-btn tiny ghost">⬇️ 导出</button>
+        </div>
+      </div>
+      <div id="model-content" class="markdown" style=""></div>
+    </div>
+
+    <!-- ========== Notes (notebook) ========== -->
+    <div class="wf-card soft" style="margin-bottom: 14px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+        <button id="toggle-notes" style="all: unset; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 600;">
+          <span class="wf-tag">📓 笔记本</span>
+          <span id="notes-count" style="font-size: 12px; color: var(--ink-3); font-weight: 400;"></span>
+          <span id="notes-arrow" style="color: var(--ink-3); transition: transform .2s; margin-left: 4px;">▼</span>
+        </button>
+        <div id="notes-toolbar" class="row tight" hidden>
+          <input id="notes-search" class="wf-input" type="text" placeholder="搜索标题/内容/标签..." style="width: 220px; padding: 4px 10px; font-size: 12px;">
+          <select id="notes-filter" class="wf-select" style="width: auto; padding: 4px 24px 4px 8px; font-size: 12px;">
+            <option value="">全部类型</option>
+            <option value="template">📋 模板</option>
+            <option value="vocab">🔤 词汇</option>
+            <option value="phrase">💬 句式</option>
+            <option value="exam">📝 真题</option>
+            <option value="other">🗂️ 其他</option>
+          </select>
+          <button id="new-note" class="wf-btn tiny accent">+ 新笔记</button>
+          <button id="export-notes" class="wf-btn tiny ghost">⬇️ 导出</button>
+        </div>
+      </div>
+
+      <div id="notes-panel" hidden>
+        <!-- Viewer (rendered markdown) -->
+        <div id="note-viewer" class="wf-card" hidden style="margin-bottom: 12px; padding: 16px; border-color: var(--accent);">
+          <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 8px; gap: 12px;">
+            <div style="min-width: 0; flex: 1;">
+              <div class="row tight" style="gap: 6px; margin-bottom: 4px;">
+                <span id="note-viewer-type" style="font-size: 11px; padding: 1px 8px; border-radius: 999px; font-weight: 600;"></span>
+                <span id="note-viewer-date" class="font-mono" style="font-size: 10px; color: var(--ink-3);"></span>
+              </div>
+              <h2 id="note-viewer-title" style="margin: 0; font-size: 18px; font-weight: 700; color: var(--ink); line-height: 1.3;"></h2>
+              <div id="note-viewer-tags" class="row tight" style="gap: 4px; margin-top: 6px; flex-wrap: wrap;"></div>
+            </div>
+            <div class="row tight" style="flex-shrink: 0;">
+              <button id="note-viewer-copy" class="wf-btn tiny ghost">📋 复制</button>
+              <button id="note-viewer-edit" class="wf-btn tiny ghost">✏️ 编辑</button>
+              <button id="note-viewer-close" class="wf-btn tiny ghost">× 关闭</button>
+            </div>
+          </div>
+          <hr class="wf-rule thin">
+          <div id="note-viewer-content" class="markdown" style=""></div>
+        </div>
+
+        <div id="note-editor" class="wf-card dashed" hidden style="margin-bottom: 12px; padding: 12px;">
+          <div class="row" style="margin-bottom: 8px; gap: 8px;">
+            <input id="note-title" class="wf-input" type="text" placeholder="标题（如：互动写作 P1 · 选择对比类）" style="flex: 1; font-size: 14px;">
+            <select id="note-type" class="wf-select" style="width: auto;">
+              <option value="template">📋 模板</option>
+              <option value="vocab">🔤 词汇</option>
+              <option value="phrase">💬 句式</option>
+              <option value="exam">📝 真题</option>
+              <option value="other">🗂️ 其他</option>
+            </select>
+          </div>
+          <input id="note-tags" class="wf-input" type="text" placeholder="标签（用逗号分隔，如：P1, 选择对比, intro）" style="margin-bottom: 8px; font-size: 13px;">
+          <textarea id="note-content" class="wf-textarea" rows="10" placeholder="笔记内容（支持 markdown · **加粗** _斜体_ `代码` ## 标题）..."></textarea>
+          <div class="row" style="margin-top: 8px; justify-content: space-between;">
+            <span id="note-edit-status" style="font-size: 12px; color: var(--ink-3);"></span>
+            <div class="row tight">
+              <button id="note-cancel" class="wf-btn tiny ghost">取消</button>
+              <button id="note-delete" class="wf-btn tiny ghost" style="color: var(--bad); display: none;">删除</button>
+              <button id="note-save" class="wf-btn tiny accent">✓ 保存</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="notes-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px;"></div>
+      </div>
+    </div>
+
+    <!-- ========== History (table density) ========== -->
+    <div class="wf-card soft">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span class="wf-tag">📚 历史记录</span>
+          <span id="history-count" style="font-size: 12px; color: var(--ink-3);"></span>
+          <span id="history-trend" style="font-size: 12px;"></span>
+        </div>
+        <div class="row tight">
+          <label class="wf-btn tiny ghost" style="cursor: pointer;">
+            📥 导入 .md
+            <input type="file" id="import-md" accept=".md,.markdown,.txt" hidden multiple>
+          </label>
+          <button id="export-all-history" class="wf-btn tiny ghost">导出全部</button>
+          <button id="clear-history" class="wf-btn tiny ghost" style="color: var(--bad);">清空</button>
+        </div>
+      </div>
+      <div id="history-list" style="border-top: 1.5px solid var(--ink-4); max-height: 480px; overflow-y: auto;"></div>
+    </div>
+
+  </div>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    let lastResult = '';
+    let lastRewrite = '';
+    let lastModelResult = '';
+    let currentMode = 'interview';
+
+    // ============= Sketch SVG primitives =============
+
+    function jitter(seed, amp = 1) {
+      const x = Math.sin(seed * 12.9898) * 43758.5453;
+      return (x - Math.floor(x) - 0.5) * amp * 2;
+    }
+
+    function sketchTrend(svg, scores, target = 115) {
+      svg.innerHTML = '';
+      const W = +svg.getAttribute('width') || 320;
+      const H = +svg.getAttribute('height') || 80;
+      svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+
+      if (!scores || scores.length === 0) {
+        const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        t.setAttribute('x', W / 2);
+        t.setAttribute('y', H / 2 + 4);
+        t.setAttribute('font-size', '11');
+        t.setAttribute('fill', 'var(--ink-3)');
+        t.setAttribute('text-anchor', 'middle');
+        t.textContent = '完成一次精批后显示';
+        svg.appendChild(t);
+        return;
+      }
+
+      const min = Math.min(target - 10, ...scores) - 5;
+      const max = Math.max(target + 5, ...scores) + 5;
+      const span = max - min || 1;
+      const px = 8, py = 12;
+      const w = W - px * 2 - 28;
+      const h = H - py * 2;
+
+      const targetY = py + h - ((target - min) / span) * h;
+      const targetLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      targetLine.setAttribute('x1', px);
+      targetLine.setAttribute('y1', targetY);
+      targetLine.setAttribute('x2', px + w);
+      targetLine.setAttribute('y2', targetY);
+      targetLine.setAttribute('stroke', '#8a8378');
+      targetLine.setAttribute('stroke-width', '1');
+      targetLine.setAttribute('stroke-dasharray', '3 3');
+      svg.appendChild(targetLine);
+
+      const targetLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      targetLabel.setAttribute('x', px + w + 4);
+      targetLabel.setAttribute('y', targetY + 3);
+      targetLabel.setAttribute('font-size', '10');
+      targetLabel.setAttribute('fill', '#8a8378');
+      targetLabel.setAttribute('font-family', 'JetBrains Mono');
+      targetLabel.textContent = '115';
+      svg.appendChild(targetLabel);
+
+      const points = scores.map((s, i) => {
+        const denom = Math.max(1, scores.length - 1);
+        const x = px + (i / denom) * w + jitter(i + 1, 0.6);
+        const y = py + h - ((s - min) / span) * h + jitter(i + 100, 0.6);
+        return [x, y];
+      });
+
+      const d = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ');
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', d);
+      path.setAttribute('fill', 'none');
+      path.setAttribute('stroke', '#d96b2b');
+      path.setAttribute('stroke-width', '2');
+      path.setAttribute('stroke-linecap', 'round');
+      path.setAttribute('stroke-linejoin', 'round');
+      svg.appendChild(path);
+
+      points.forEach((p, i) => {
+        const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        dot.setAttribute('cx', p[0]);
+        dot.setAttribute('cy', p[1]);
+        dot.setAttribute('r', i === points.length - 1 ? 3.5 : 2);
+        dot.setAttribute('fill', i === points.length - 1 ? '#d96b2b' : '#fafaf6');
+        dot.setAttribute('stroke', '#d96b2b');
+        dot.setAttribute('stroke-width', '1.2');
+        svg.appendChild(dot);
+      });
+
+      const lastScore = scores[scores.length - 1];
+      const lastPt = points[points.length - 1];
+      const lbl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      lbl.setAttribute('x', lastPt[0]);
+      lbl.setAttribute('y', lastPt[1] - 8);
+      lbl.setAttribute('font-size', '11');
+      lbl.setAttribute('font-weight', '700');
+      lbl.setAttribute('fill', '#8b3d10');
+      lbl.setAttribute('font-family', 'JetBrains Mono');
+      lbl.setAttribute('text-anchor', 'middle');
+      lbl.textContent = lastScore;
+      svg.appendChild(lbl);
+    }
+
+    function sketchRadar(svg, scores, target = 80, labels = ['内容', '结构', '准确', '繁度', '深度', '多样', '篇幅']) {
+      svg.innerHTML = '';
+      const W = +svg.getAttribute('width') || 280;
+      const H = +svg.getAttribute('height') || 240;
+      svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+
+      const cx = W / 2;
+      const cy = H / 2 + 4;
+      const r = Math.min(W, H) / 2 - 30;
+      const sides = scores.length;
+      const startAngle = -Math.PI / 2;
+
+      const pt = (i, pct, jitterAmp = 0) => {
+        const a = startAngle + (i * 2 * Math.PI) / sides;
+        const jr = r * pct + (jitterAmp ? jitter(i + 1, jitterAmp) : 0);
+        return [cx + Math.cos(a) * jr, cy + Math.sin(a) * jr];
+      };
+
+      [0.4, 0.7, 1.0].forEach(pct => {
+        const pts = Array.from({ length: sides }, (_, i) => pt(i, pct));
+        const poly = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        poly.setAttribute('d', pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ') + ' Z');
+        poly.setAttribute('fill', 'none');
+        poly.setAttribute('stroke', '#c9c2b6');
+        poly.setAttribute('stroke-width', '0.7');
+        svg.appendChild(poly);
+      });
+
+      for (let i = 0; i < sides; i++) {
+        const [x, y] = pt(i, 1);
+        const ax = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        ax.setAttribute('x1', cx);
+        ax.setAttribute('y1', cy);
+        ax.setAttribute('x2', x);
+        ax.setAttribute('y2', y);
+        ax.setAttribute('stroke', '#c9c2b6');
+        ax.setAttribute('stroke-width', '0.7');
+        svg.appendChild(ax);
+      }
+
+      const targetPts = Array.from({ length: sides }, (_, i) => pt(i, target / 100));
+      const targetPoly = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      targetPoly.setAttribute('d', targetPts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ') + ' Z');
+      targetPoly.setAttribute('fill', 'none');
+      targetPoly.setAttribute('stroke', '#2f7a4a');
+      targetPoly.setAttribute('stroke-width', '1');
+      targetPoly.setAttribute('stroke-dasharray', '4 3');
+      svg.appendChild(targetPoly);
+
+      const scorePts = scores.map((s, i) => pt(i, Math.min(s || 0, 100) / 100, 0.8));
+      const scorePoly = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      scorePoly.setAttribute('d', scorePts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ') + ' Z');
+      scorePoly.setAttribute('fill', 'rgba(217,107,43,0.22)');
+      scorePoly.setAttribute('stroke', '#d96b2b');
+      scorePoly.setAttribute('stroke-width', '1.5');
+      scorePoly.setAttribute('stroke-linejoin', 'round');
+      svg.appendChild(scorePoly);
+
+      scorePts.forEach((p) => {
+        const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        dot.setAttribute('cx', p[0]);
+        dot.setAttribute('cy', p[1]);
+        dot.setAttribute('r', '2.5');
+        dot.setAttribute('fill', '#d96b2b');
+        svg.appendChild(dot);
+      });
+
+      labels.forEach((label, i) => {
+        const [x, y] = pt(i, 1.2);
+        const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        txt.setAttribute('x', x);
+        txt.setAttribute('y', y);
+        txt.setAttribute('font-size', '11');
+        txt.setAttribute('fill', '#524b41');
+        txt.setAttribute('text-anchor', 'middle');
+        txt.setAttribute('dominant-baseline', 'middle');
+        txt.textContent = label;
+        svg.appendChild(txt);
+
+        const score = scores[i];
+        if (score != null) {
+          const sc = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          sc.setAttribute('x', x);
+          sc.setAttribute('y', y + 12);
+          sc.setAttribute('font-size', '9');
+          sc.setAttribute('fill', score >= 80 ? '#2f7a4a' : score >= 65 ? '#c08b1a' : '#b3382b');
+          sc.setAttribute('text-anchor', 'middle');
+          sc.setAttribute('font-family', 'JetBrains Mono');
+          sc.textContent = score;
+          svg.appendChild(sc);
+        }
+      });
+    }
+
+    // ============= Header progress =============
+
+    const DEADLINE = (() => {
+      const stored = localStorage.getItem('det-deadline');
+      if (stored) { const d = new Date(stored); if (!isNaN(d)) return d; }
+      const d = new Date(); d.setDate(d.getDate() + 90); return d;
+    })();
+    const TARGET = parseInt(localStorage.getItem('det-target')) || 115;
+    const BASELINE = parseInt(localStorage.getItem('det-baseline')) || 70;
+
+    function renderHeader() {
+      const h = getHistory().filter(it => (it.type || 'review') === 'review');
+      const recentScores = h.slice(0, 8).map(item => {
+        const sm = item.response.match(/<scores>([\s\S]*?)<\/scores>/);
+        if (!sm) return null;
+        try { return JSON.parse(sm[1].trim()).total; } catch { return null; }
+      }).filter(s => s !== null).reverse();
+
+      const lastScore = recentScores.length > 0 ? recentScores[recentScores.length - 1] : 85;
+      $('header-score').textContent = lastScore;
+
+      const pct = Math.max(0, Math.min(100, ((lastScore - BASELINE) / (TARGET - BASELINE)) * 100));
+      $('header-progress').style.width = `${pct}%`;
+      $('header-gap').textContent = Math.max(0, TARGET - lastScore);
+
+      if (recentScores.length >= 2) {
+        const delta = recentScores[recentScores.length - 1] - recentScores[recentScores.length - 2];
+        $('header-delta').textContent = delta > 0 ? `+${delta} ↑` : delta < 0 ? `${delta} ↓` : '';
+        $('header-delta').style.color = delta > 0 ? 'var(--good)' : delta < 0 ? 'var(--bad)' : 'var(--ink-3)';
+      } else {
+        $('header-delta').textContent = '';
+      }
+
+      $('trend-label').textContent = recentScores.length === 0
+        ? '近期还没记录'
+        : `近 ${recentScores.length} 篇 · 起 ${recentScores[0]} → 当 ${recentScores[recentScores.length - 1]}`;
+      sketchTrend($('trend-svg'), recentScores);
+
+      const days = Math.max(0, Math.ceil((DEADLINE - new Date()) / 86400000));
+      $('countdown-days').textContent = days;
+    }
+
+    // ============= Mode segmented =============
+
+    document.querySelectorAll('.mode-seg-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (btn.disabled) return;
+        setMode(btn.dataset.mode);
+      });
+    });
+
+    function setMode(mode) {
+      currentMode = mode;
+      document.querySelectorAll('.mode-seg-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.mode === mode);
+      });
+
+      const isInteractive = mode === 'interactive';
+      $('part2-prompt-wrap').hidden = !isInteractive;
+      $('part2-answer-wrap').hidden = !isInteractive;
+
+      if (isInteractive) {
+        $('prompt-label').textContent = 'Part 1 题目';
+        $('answer-label').firstElementChild.textContent = 'Part 1 答案 (5 min)';
+      } else {
+        $('prompt-label').textContent = '题目（Prompt）';
+        $('answer-label').firstElementChild.textContent = '你的答案（Answer）';
+      }
+
+      $('start-timer').textContent = isInteractive ? '⏱️ 开始 P1 (5 min)' : '⏱️ 开始 5 min 限时';
+      $('practice-status').textContent = '';
+    }
+
+    // ============= Word counter =============
+
+    function updateWordCount() {
+      const w = ($('answer').value.trim().split(/\s+/).filter(Boolean) || []).length;
+      const target = currentMode === 'interactive' ? 100 : 130;
+      const min = currentMode === 'interactive' ? 80 : 100;
+      $('word-count').textContent = `${w} 词`;
+      $('word-count').style.color = w >= target ? 'var(--good)' : w >= min ? 'var(--accent-ink)' : 'var(--ink-3)';
+    }
+    function updateWordCount2() {
+      const w = ($('answer2').value.trim().split(/\s+/).filter(Boolean) || []).length;
+      $('word-count-2').textContent = `${w} 词`;
+      $('word-count-2').style.color = w >= 60 ? 'var(--good)' : w >= 50 ? 'var(--accent-ink)' : 'var(--ink-3)';
+    }
+    $('answer').addEventListener('input', updateWordCount);
+    $('answer2').addEventListener('input', updateWordCount2);
+
+    // ============= Submit =============
+
+    $('submit').onclick = async () => {
+      const prompt = $('prompt').value.trim();
+      const answer = $('answer').value.trim();
+
+      let payload;
+      if (currentMode === 'interactive') {
+        const prompt2 = $('prompt2').value.trim();
+        const answer2 = $('answer2').value.trim();
+        if (!answer && !answer2) { alert('Part 1 和 Part 2 至少要填一个'); return; }
+        payload = { mode: 'interactive', prompt, answer, prompt2, answer2 };
+      } else {
+        if (!answer) { alert('请输入答案'); return; }
+        payload = { mode: 'interview', prompt, answer };
+      }
+
+      stopTimer();
+      $('start-timer').hidden = true;
+      $('stop-timer').hidden = true;
+
+      $('status').innerHTML = '<span class="loading-dots">精批中（30-60 秒），成绩单稍候</span>';
+      $('submit').disabled = true;
+      $('output').hidden = true;
+      $('scorecard').hidden = true;
+
+      try {
+        const response = await BYOK.reviewEssay(payload);
+        lastResult = response;
+        renderResult(response);
+        autoSaveHistory();
+        $('status').innerHTML = '<span style="color: var(--good);">✓ 成绩单已出 · 已自动存档</span>';
+        showTeacherWelcome();
+      } catch (e) {
+        $('status').innerHTML = `<span style="color: var(--bad);">❌ ${e.message}</span>`;
+      } finally {
+        $('submit').disabled = false;
+      }
+    };
+
+    function renderResult(text) {
+      const scoreMatch = text.match(/<scores>([\s\S]*?)<\/scores>/);
+      let scores = null;
+      if (scoreMatch) {
+        try {
+          scores = JSON.parse(scoreMatch[1].trim());
+          renderScores(scores);
+          text = text.replace(/<scores>[\s\S]*?<\/scores>/, '').trim();
+        } catch (e) { console.warn('Score parse failed:', e); }
+      }
+      const rewriteMatch = text.match(/##\s*115\s*级改写[^\n]*\n([\s\S]*?)(?=\n##|$)/);
+      lastRewrite = rewriteMatch ? rewriteMatch[1].trim() : '';
+
+      $('output').hidden = false;
+      $('output-content').innerHTML = marked.parse(text);
+    }
+
+    function scoreColor(s) {
+      if (s >= 130) return 'var(--good)';
+      if (s >= 115) return '#3b6f8f';
+      if (s >= 100) return 'var(--warn)';
+      if (s >= 85)  return 'var(--accent-ink)';
+      return 'var(--bad)';
+    }
+
+    function renderScores(s) {
+      const total = s.total || 0;
+      const color = scoreColor(total);
+      const gap = total - 115;
+
+      // Show scorecard
+      $('scorecard').hidden = false;
+
+      // Header date
+      $('scorecard-date').textContent = new Date().toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+
+      // Hero score
+      $('score-display').innerHTML = `
+        <div class="font-mono tnum" style="font-size: 80px; font-weight: 700; color: ${color}; line-height: 1;">${total}</div>
+        <div style="font-size: 13px; color: var(--ink-3); margin-top: 8px; font-family: 'JetBrains Mono', monospace;">/ 160 · IELTS ${s.ielts || '?'} · CEFR ${s.cefr || '?'}</div>
+        <div style="font-size: 14px; margin-top: 6px;">距离 115 目标: <strong style="color: ${total >= 115 ? 'var(--good)' : 'var(--bad)'};">${gap >= 0 ? '+' : ''}${gap}</strong></div>
+      `;
+
+      // Footer meta
+      $('score-meta').textContent = `Total ${total}/160 · IELTS ${s.ielts || '?'} · CEFR ${s.cefr || '?'} · gap ${gap >= 0 ? '+' : ''}${gap}`;
+
+      // Delta vs previous review
+      const h = getHistory().filter(it => (it.type || 'review') === 'review');
+      let prevScore = null;
+      if (h.length >= 1) {
+        const prev = h[0];
+        const sm = prev.response.match(/<scores>([\s\S]*?)<\/scores>/);
+        if (sm) { try { prevScore = JSON.parse(sm[1].trim()).total; } catch {} }
+      }
+      if (prevScore != null) {
+        const delta = total - prevScore;
+        $('scorecard-delta').textContent = delta > 0 ? `较上篇 +${delta} ↑` : delta < 0 ? `较上篇 ${delta} ↓` : '与上篇持平';
+        $('scorecard-delta').style.color = delta > 0 ? '#7fc89a' : delta < 0 ? '#e88a7d' : 'var(--ink-4)';
+      } else {
+        $('scorecard-delta').textContent = '首篇 · 起步';
+        $('scorecard-delta').style.color = 'var(--ink-4)';
+      }
+
+      // 7-dim breakdown list
+      renderScorecardDims(s);
+
+      // Radar
+      const radar = $('sketch-radar');
+      radar.hidden = false;
+      sketchRadar(radar, [s.content, s.structure, s.grammar, s.complexity, s.vocab, s.diversity, s.length], 80);
+
+      // Top 3
+      renderTop3(s);
+
+      // Scroll to scorecard
+      setTimeout(() => $('scorecard').scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+    }
+
+    function renderScorecardDims(s) {
+      const dims = [
+        { key: 'content',    label: '内容相关度', en: 'task relevance' },
+        { key: 'structure',  label: '逻辑结构',   en: 'discourse coherence' },
+        { key: 'grammar',    label: '语法准确性', en: 'grammatical accuracy' },
+        { key: 'complexity', label: '语法复杂度', en: 'grammatical complexity' },
+        { key: 'vocab',      label: '词汇复杂度', en: 'lexical sophistication' },
+        { key: 'diversity',  label: '词汇多样性', en: 'lexical diversity' },
+        { key: 'length',     label: '篇幅长度',   en: 'length' },
+      ];
+      $('scorecard-dims').innerHTML = dims.map(d => {
+        const score = s[d.key] || 0;
+        const c = score >= 85 ? 'var(--good)' : score >= 70 ? 'var(--warn)' : 'var(--bad)';
+        const pct = Math.max(0, Math.min(100, score));
+        return `
+          <div style="display: grid; grid-template-columns: 105px 1fr 36px; align-items: center; gap: 10px;">
+            <div style="font-size: 13px; color: var(--ink); font-weight: 500;">${d.label}<div style="font-size: 9px; color: var(--ink-3); font-family: 'JetBrains Mono', monospace; line-height: 1;">${d.en}</div></div>
+            <div style="height: 8px; background: var(--paper-2); border: 1px solid var(--ink-4); border-radius: 4px; overflow: hidden;">
+              <div style="height: 100%; width: ${pct}%; background: ${c}; transition: width .4s ease;"></div>
+            </div>
+            <div class="font-mono tnum" style="font-size: 14px; font-weight: 700; color: ${c}; text-align: right;">${score}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderTop3(s) {
+      const dims = [
+        { key: 'content',    label: '内容相关度', tip: '加更多具体例子 / 命名实体（公司、人名、数据）' },
+        { key: 'structure',  label: '逻辑结构',  tip: '检查 5 段式：intro + 2 body + 让步反驳 + 结尾' },
+        { key: 'grammar',    label: '语法准确',  tip: '细看 tense / s 单复数 / 冠词 / 搭配' },
+        { key: 'complexity', label: '语法复杂',  tip: '试一个倒装 + 一个分词作状语 / 关系从句' },
+        { key: 'vocab',      label: '词汇深度',  tip: '替换 important / good / things 等基础词为 AWL 词' },
+        { key: 'diversity',  label: '词汇多样',  tip: '查找重复词，用同义词替换' },
+        { key: 'length',     label: '篇幅长度',  tip: 'DET 5 min 目标 130+ 词；不够补让步反驳或具体例子' },
+      ];
+      const scored = dims
+        .map(d => ({ ...d, score: s[d.key] || 0 }))
+        .sort((a, b) => a.score - b.score)
+        .slice(0, 3);
+
+      $('top3-panel').hidden = false;
+      $('top3-list').innerHTML = scored.map((d, i) => {
+        const c = d.score < 65 ? 'var(--bad)' : d.score < 80 ? 'var(--warn)' : 'var(--ink-3)';
+        const num = ['①', '②', '③'][i];
+        return `
+          <div class="top3-item" style="border-left-color: ${c};">
+            <div class="label" style="color: ${c};">${num} ${d.label} · ${d.score}</div>
+            <div class="tip">${d.tip}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ============= History =============
+
+    function getHistory() {
+      try { return JSON.parse(localStorage.getItem('det-history') || '[]'); } catch { return []; }
+    }
+    function setHistory(h) { localStorage.setItem('det-history', JSON.stringify(h)); }
+
+    function buildHistoryItem(type, responseOverride) {
+      const response = responseOverride || lastResult;
+      const promptVal = $('prompt').value;
+      const answerVal = $('answer').value;
+
+      let prompt = promptVal;
+      let answer = type === 'review' ? answerVal : '';
+
+      if (currentMode === 'interactive' && type === 'review') {
+        prompt = `[P1] ${promptVal}\n\n[P2] ${$('prompt2').value}`;
+        answer = `[P1] ${answerVal}\n\n[P2] ${$('answer2').value}`;
+      }
+
+      return {
+        date: new Date().toISOString(),
+        type,
+        mode: currentMode,
+        prompt,
+        answer,
+        response,
+      };
+    }
+
+    function autoSaveHistory(type = 'review', responseOverride = null) {
+      const response = responseOverride || lastResult;
+      if (!response) return;
+      const h = getHistory();
+      const now = Date.now();
+      const item = buildHistoryItem(type, responseOverride);
+      const lastSimilar = h.findIndex(it =>
+        it.type === type &&
+        it.prompt === item.prompt &&
+        it.answer === item.answer &&
+        (now - new Date(it.date).getTime()) < 5 * 60 * 1000
+      );
+      if (lastSimilar !== -1) h[lastSimilar] = item;
+      else h.unshift(item);
+      setHistory(h.slice(0, 100));
+      renderHistory();
+      renderHeader();
+    }
+
+    $('save-history').onclick = () => {
+      if (!lastResult) { alert('还没有精批结果'); return; }
+      autoSaveHistory();
+      $('save-history').textContent = '✓ 已存档';
+      setTimeout(() => $('save-history').innerHTML = '💾 存档', 2000);
+    };
+
+    function renderHistory() {
+      const h = getHistory();
+      if (h.length === 0) {
+        $('history-list').innerHTML = '<div style="padding: 24px; text-align: center; color: var(--ink-3); font-size: 13px;">还没有记录。完成一次精批后会自动存档。</div>';
+        $('history-count').textContent = '';
+        $('history-trend').innerHTML = '';
+        return;
+      }
+      $('history-count').textContent = `共 ${h.length} 篇`;
+
+      const reviews = h.filter(it => (it.type || 'review') === 'review');
+      const recent = reviews.slice(0, 8).map(item => {
+        const sm = item.response.match(/<scores>([\s\S]*?)<\/scores>/);
+        if (!sm) return null;
+        try { return JSON.parse(sm[1].trim()).total; } catch { return null; }
+      }).filter(s => s !== null).reverse();
+
+      if (recent.length >= 2) {
+        const first = recent[0], last = recent[recent.length - 1];
+        const delta = last - first;
+        const icon = delta > 0 ? '📈' : delta < 0 ? '📉' : '➡️';
+        const c = delta > 0 ? 'var(--good)' : delta < 0 ? 'var(--bad)' : 'var(--ink-3)';
+        $('history-trend').innerHTML = `<span style="color: ${c};">${icon} 近 ${recent.length} 篇 ${first} → ${last} (${delta > 0 ? '+' : ''}${delta})</span>`;
+      } else {
+        $('history-trend').innerHTML = '';
+      }
+
+      $('history-list').innerHTML = h.map((item, i) => {
+        const type = item.type || 'review';
+        const isModel = type === 'model';
+        const itemMode = item.mode || 'interview';
+
+        let scoreCell, score = null;
+        if (isModel) {
+          scoreCell = `<div style="text-align: center;"><span style="font-size: 18px;">📘</span><div class="wf-tag" style="font-size: 9px;">范文</div></div>`;
+        } else if (type === 'correction') {
+          const cm = item.response.match(/<correction>([\s\S]*?)<\/correction>/);
+          let rate = '?';
+          if (cm) {
+            try {
+              const cs = JSON.parse(cm[1].trim());
+              const total = cs.original || 0;
+              rate = total > 0 ? Math.round((cs.fixed || 0) / total * 100) + '%' : '—';
+            } catch {}
+          }
+          scoreCell = `<div style="text-align: center;"><span class="font-mono tnum" style="font-size: 18px; font-weight: 700; color: var(--bad);">${rate}</span><div class="wf-tag" style="font-size: 9px; color: var(--bad);">订正</div></div>`;
+        } else {
+          const sm = item.response.match(/<scores>([\s\S]*?)<\/scores>/);
+          if (sm) {
+            try {
+              score = JSON.parse(sm[1].trim()).total;
+              const c = scoreColor(score);
+              scoreCell = `<div style="text-align: center;"><span class="font-mono tnum" style="font-size: 22px; font-weight: 700; color: ${c};">${score}</span><div class="wf-tag" style="font-size: 9px;">/160</div></div>`;
+            } catch { scoreCell = `<div style="text-align: center;"><span style="font-size: 18px;">📊</span></div>`; }
+          } else { scoreCell = `<div style="text-align: center;"><span style="font-size: 18px;">📊</span></div>`; }
+        }
+
+        const promptShort = (item.prompt || '(无题目)').replace(/\[P\d\]\s*/g, '').slice(0, 90);
+        const wordCount = item.answer ? item.answer.replace(/\[P\d\]\s*/g, '').trim().split(/\s+/).filter(Boolean).length : 0;
+        const date = new Date(item.date);
+        const dateStr = date.toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+        const modeBadge = itemMode === 'interactive' ? `<span class="wf-tag" style="margin-right: 6px;">P1+P2</span>` : '';
+
+        return `
+          <div class="hist-row" onclick="loadHistory(${i})">
+            <div>${scoreCell}</div>
+            <div style="min-width: 0;">
+              <div style="font-size: 11px; color: var(--ink-3); font-family: 'JetBrains Mono', monospace; margin-bottom: 2px;">${dateStr} · ${wordCount} 词${score ? ' · ' + (JSON.parse(item.response.match(/<scores>([\s\S]*?)<\/scores>/)[1].trim()).cefr || '') : ''}</div>
+              <div style="font-weight: 500; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${modeBadge}${escapeHtml(promptShort)}</div>
+            </div>
+            <div class="wf-tag" style="font-size: 10px;">查看 →</div>
+            <button onclick="event.stopPropagation(); if(confirm('删除此记录？')) deleteHistory(${i})" style="all: unset; cursor: pointer; color: var(--ink-4); font-size: 18px;" title="删除">×</button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    window.loadHistory = (i) => {
+      const h = getHistory();
+      const item = h[i];
+      const type = item.type || 'review';
+      const itemMode = item.mode || 'interview';
+
+      setMode(itemMode);
+
+      if (itemMode === 'interactive') {
+        const p1pm = item.prompt.match(/\[P1\]([\s\S]*?)(?=\[P2\]|$)/);
+        const p2pm = item.prompt.match(/\[P2\]([\s\S]*)/);
+        const p1am = (item.answer || '').match(/\[P1\]([\s\S]*?)(?=\[P2\]|$)/);
+        const p2am = (item.answer || '').match(/\[P2\]([\s\S]*)/);
+        $('prompt').value = p1pm ? p1pm[1].trim() : item.prompt || '';
+        $('prompt2').value = p2pm ? p2pm[1].trim() : '';
+        $('answer').value = p1am ? p1am[1].trim() : '';
+        $('answer2').value = p2am ? p2am[1].trim() : '';
+      } else {
+        $('prompt').value = item.prompt || '';
+        $('answer').value = (item.answer || '');
+        $('answer2').value = '';
+      }
+      updateWordCount();
+      updateWordCount2();
+
+      if (type === 'model') {
+        lastModelResult = item.response;
+        $('model-output').hidden = false;
+        $('model-content').innerHTML = marked.parse(item.response);
+        $('output').hidden = true;
+        $('model-output').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else if (type === 'correction') {
+        lastCorrectionResult = item.response;
+        lastCorrectionAnswer = item.answer || '';
+        $('correction-original').textContent = item.originalAnswer || '';
+        $('correction-rewrite').value = item.answer || '';
+        renderCorrectionResult(item.response);
+        $('correction-panel').hidden = false;
+      } else {
+        lastResult = item.response;
+        renderResult(item.response);
+        $('model-output').hidden = true;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    };
+
+    window.deleteHistory = (i) => {
+      const h = getHistory();
+      h.splice(i, 1);
+      setHistory(h);
+      renderHistory();
+      renderHeader();
+    };
+
+    $('clear-history').onclick = () => {
+      if (confirm('确认清空全部历史？此操作不可恢复。')) {
+        setHistory([]);
+        renderHistory();
+        renderHeader();
+      }
+    };
+
+    $('import-md').addEventListener('change', async e => {
+      const files = Array.from(e.target.files);
+      if (files.length === 0) return;
+      let imported = 0;
+      const h = getHistory();
+      for (const file of files) {
+        try {
+          const text = await file.text();
+          let prompt = '';
+          const pm = text.match(/\*\*题目\*\*：(.+)/);
+          if (pm) prompt = pm[1].trim();
+
+          const isReview = /总分.*?\/\s*160/.test(text) && /所有错误|错误清单/.test(text);
+          const isModel = /范文/.test(text) && /讲解/.test(text);
+          const itype = isModel ? 'model' : (isReview ? 'review' : 'model');
+
+          let response = text;
+          const firstHr = text.indexOf('\n---\n');
+          if (firstHr !== -1) response = text.slice(firstHr + 5).trim();
+
+          if (itype === 'review') {
+            const sm = text.match(/总分.*?(\d+)\s*\/\s*160/);
+            const ielts = text.match(/IELTS\s+([\d.]+)/);
+            const cefr = text.match(/CEFR\s+([A-Z]\d?[+\-]?)/);
+            if (sm && !response.includes('<scores>')) {
+              const total = parseInt(sm[1]);
+              const fakeScores = `<scores>{"content":${total - 5},"structure":${total - 10},"grammar":${total},"complexity":${total - 5},"vocab":${total},"diversity":${total},"length":${total - 5},"total":${total},"ielts":"${ielts ? ielts[1] : '?'}","cefr":"${cefr ? cefr[1] : '?'}"}</scores>\n\n`;
+              response = fakeScores + response;
+            }
+          }
+
+          let answer = '';
+          const am = text.match(/##\s*我的答案\s*\n+([\s\S]*?)(?=\n##|\n---|$)/);
+          if (am) answer = am[1].trim();
+
+          h.unshift({
+            date: file.lastModified ? new Date(file.lastModified).toISOString() : new Date().toISOString(),
+            type: itype,
+            mode: 'interview',
+            prompt,
+            answer,
+            response,
+          });
+          imported++;
+        } catch (err) { console.error('Import failed:', file.name, err); }
+      }
+      setHistory(h.slice(0, 100));
+      renderHistory();
+      renderHeader();
+      e.target.value = '';
+      alert(`✓ 已导入 ${imported} 篇到历史记录。`);
+    });
+
+    $('export-all-history').onclick = () => {
+      const h = getHistory();
+      if (h.length === 0) { alert('无历史记录'); return; }
+      const md = h.map((item, i) => {
+        const sm = item.response.match(/<scores>([\s\S]*?)<\/scores>/);
+        let score = '?';
+        try { if (sm) score = JSON.parse(sm[1].trim()).total; } catch {}
+        const clean = item.response.replace(/<scores>[\s\S]*?<\/scores>/, '').trim();
+        return `\n---\n\n# 第 ${h.length - i} 篇 — ${score}/160\n\n**日期**：${new Date(item.date).toLocaleString('zh-CN')}\n**题目**：${item.prompt || '(无题目)'}\n**词数**：${item.answer ? item.answer.trim().split(/\s+/).filter(Boolean).length : 0}\n\n## 我的答案\n\n${item.answer}\n\n## 精批结果\n\n${clean}\n`;
+      }).join('\n\n');
+      const header = `# DET 写作精批合集\n\n**导出时间**：${new Date().toLocaleString('zh-CN')}\n**总篇数**：${h.length}\n`;
+      const blob = new Blob([header + md], { type: 'text/markdown;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `det-精批合集-${new Date().toISOString().slice(0, 10)}.md`;
+      a.click();
+    };
+
+    $('export').onclick = () => {
+      if (!lastResult) { alert('还没有精批结果'); return; }
+      const md = lastResult.replace(/<scores>[\s\S]*?<\/scores>/, '').trim();
+      const header = `# DET 精批结果\n\n**题目**：${$('prompt').value}\n\n**日期**：${new Date().toLocaleString('zh-CN')}\n\n---\n\n## 我的答案\n\n${$('answer').value}\n\n---\n\n`;
+      const blob = new Blob([header + md], { type: 'text/markdown;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `det-精批-${Date.now()}.md`;
+      a.click();
+    };
+
+    $('copy-rewrite').onclick = async () => {
+      if (!lastRewrite) { alert('未找到 115 改写段'); return; }
+      try {
+        await navigator.clipboard.writeText(lastRewrite);
+        $('copy-rewrite').textContent = '✓ 已复制';
+        setTimeout(() => $('copy-rewrite').innerHTML = '📋 复制 115 改写', 2000);
+      } catch (e) { alert('复制失败：' + e.message); }
+    };
+
+    $('clear').onclick = () => {
+      $('prompt').value = '';
+      $('prompt2').value = '';
+      $('answer').value = '';
+      $('answer2').value = '';
+      updateWordCount();
+      updateWordCount2();
+      $('output').hidden = true;
+      $('scorecard').hidden = true;
+      $('sketch-radar').hidden = true;
+      $('top3-panel').hidden = true;
+      $('status').textContent = '';
+      lastResult = '';
+      lastRewrite = '';
+    };
+
+    $('example').onclick = () => {
+      if (currentMode === 'interactive') {
+        $('prompt').value = "Tell us about a memorable trip you took recently. What made it special?";
+        $('answer').value = "Last summer I went to Tokyo with my family. It was special because we walked through Shinjuku at night, and the neon signs reflected on wet streets after rain — I had never seen anything like it. We also tried tonkotsu ramen at a small shop where the chef explained the broth takes 12 hours to make. That moment showed me how craftsmanship can be quiet but powerful.";
+        $('prompt2').value = "What did you learn from this trip that changed how you see things?";
+        $('answer2').value = "It taught me that depth often hides in details. Before, I valued big achievements. Now I notice small acts of dedication — like that ramen chef — and find them more inspiring than headlines.";
+      } else {
+        $('prompt').value = "Some jobs involve frequent travel or relocation, which can impact a person's lifestyle. Would you be open to moving or traveling often for work? Why or why not?";
+        $('answer').value = "yes,i can. In my opinion, it is really depence on personal lifestyle. As for me, I am single , so i can surfer relocating frequently. Besides, moving to a new city, so that i can experience different lifestyle, which is intersting for me. Furthermore, nowadays we have many job is remote, which means our job can not be restrict by the location or time.";
+      }
+      updateWordCount();
+      updateWordCount2();
+    };
+
+    // ============= Resources =============
+    let resourcesLoaded = false;
+    $('toggle-resources').onclick = async () => {
+      const panel = $('resources-panel');
+      panel.hidden = !panel.hidden;
+      $('resources-arrow').style.transform = panel.hidden ? '' : 'rotate(180deg)';
+      if (!resourcesLoaded && !panel.hidden) {
+        try {
+          const list = await BYOK.fetchResourceList();
+          renderResourcesList(list);
+          $('resources-count').textContent = `${list.length} 份`;
+          resourcesLoaded = true;
+        } catch (e) {
+          $('resources-list').innerHTML = `<div style="color: var(--bad);">加载失败：${e.message}</div>`;
+        }
+      }
+    };
+    function renderResourcesList(resources) {
+      $('resources-list').innerHTML = resources.map(r => `
+        <button class="res-btn" data-file="${r.file}">
+          <div style="font-weight: 600; font-size: 13px; margin-bottom: 4px;">${r.title}</div>
+          <div style="font-size: 11px; color: var(--ink-3);">${r.desc}</div>
+        </button>
+      `).join('');
+      $('resources-list').querySelectorAll('button').forEach(btn => {
+        btn.onclick = () => loadResource(btn.dataset.file, btn.querySelector('div').textContent);
+      });
+    }
+    // Smart formatter for raw .txt resources → markdown
+    function formatResourceText(text) {
+      if (!text) return '';
+      const lines = text.split('\n');
+      const out = [];
+      let templateBuf = [];
+      let blankRun = 0;
+
+      const flushTemplate = () => {
+        if (templateBuf.length === 0) return;
+        const joined = templateBuf.join(' ').replace(/\s{2,}/g, ' ').trim();
+        if (joined) { out.push('> ' + joined); out.push(''); }
+        templateBuf = [];
+      };
+
+      for (let i = 0; i < lines.length; i++) {
+        const trimmed = lines[i].trim();
+
+        // Drop pure page numbers + TOC dot leaders
+        if (/^\d{1,3}$/.test(trimmed)) continue;
+        if (/[·]{3,}/.test(trimmed) || /\.{6,}/.test(trimmed)) continue;
+
+        if (!trimmed) {
+          blankRun++;
+          // Only flush on 2+ consecutive blanks (single blanks = PDF soft wrap)
+          if (blankRun >= 2) { flushTemplate(); out.push(''); }
+          continue;
+        }
+        blankRun = 0;
+
+        // 【...】 → h1
+        if (/^【.+】$/.test(trimmed)) {
+          flushTemplate();
+          out.push('# ' + trimmed.replace(/^【|】$/g, ''));
+          out.push('');
+          continue;
+        }
+
+        // 子节: 类别 · 版本（如 "描述类 · 顶配版" "选择对比类 · 简化版"）
+        if (/^[一-龥\sA-Za-z\d/]+[·•・]\s*[一-龥]+(版|式)?/.test(trimmed) && trimmed.length < 40) {
+          flushTemplate();
+          out.push('## ' + trimmed.replace(/[•・]/g, '·'));
+          out.push('');
+          continue;
+        }
+
+        // 单独版本标签
+        if (/^(顶配版|简化版|基础版|进阶版|高级版|完整版|经典版|实用版)$/.test(trimmed)) {
+          flushTemplate();
+          out.push('### ' + trimmed);
+          out.push('');
+          continue;
+        }
+
+        // 纯中文短词分类（2-6 字，无标点）
+        if (/^[一-龥]{2,6}$/.test(trimmed)) {
+          flushTemplate();
+          out.push('### ' + trimmed);
+          out.push('');
+          continue;
+        }
+
+        // 编号项 1./1、
+        if (/^\d+\s*[.、]\s*/.test(trimmed)) {
+          flushTemplate();
+          out.push(trimmed.replace(/^(\d+)\s*[.、]\s*/, '$1. '));
+          continue;
+        }
+
+        // 含英文 → 模板行（buffer 起来一会拼成 blockquote）
+        if (/[A-Za-z]/.test(trimmed)) {
+          templateBuf.push(trimmed);
+          continue;
+        }
+
+        // 纯中文段落
+        flushTemplate();
+        out.push(trimmed);
+      }
+
+      flushTemplate();
+      return out.join('\n').replace(/\n{4,}/g, '\n\n\n').trim();
+    }
+
+    let currentResourceRaw = '';
+    let resourceShowingRaw = false;
+
+    async function loadResource(file, title) {
+      $('resource-title').textContent = title;
+      $('resource-content').innerHTML = '<div style="color: var(--ink-3); padding: 12px;">加载中...</div>';
+      $('resource-raw').textContent = '';
+      $('resource-viewer').hidden = false;
+      resourceShowingRaw = false;
+      $('resource-content').hidden = false;
+      $('resource-raw').hidden = true;
+      $('resource-toggle-raw').textContent = '📄 原文';
+      $('resource-viewer').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      try {
+        const raw = await BYOK.fetchResource(file);
+        currentResourceRaw = raw;
+        const md = formatResourceText(raw);
+        $('resource-content').innerHTML = marked.parse(md);
+        $('resource-raw').textContent = raw;
+      } catch (e) {
+        $('resource-content').innerHTML = `<div style="color: var(--bad); padding: 12px;">加载失败：${e.message}</div>`;
+      }
+    }
+
+    $('resource-toggle-raw').onclick = () => {
+      resourceShowingRaw = !resourceShowingRaw;
+      $('resource-content').hidden = resourceShowingRaw;
+      $('resource-raw').hidden = !resourceShowingRaw;
+      $('resource-toggle-raw').textContent = resourceShowingRaw ? '✨ 美化' : '📄 原文';
+    };
+
+    $('resource-copy').onclick = async () => {
+      if (!currentResourceRaw) return;
+      try {
+        await navigator.clipboard.writeText(currentResourceRaw);
+        $('resource-copy').textContent = '✓ 已复制';
+        setTimeout(() => $('resource-copy').innerHTML = '📋 复制', 1500);
+      } catch (e) { alert('复制失败：' + e.message); }
+    };
+
+    $('close-resource').onclick = () => $('resource-viewer').hidden = true;
+
+    // ============= Generate Model =============
+
+    $('generate-model').onclick = async () => {
+      const prompt = $('prompt').value.trim();
+      if (!prompt) { alert('请先填题目（点"🎲 出题"或手动输入）'); return; }
+      $('generate-model').disabled = true;
+      $('generate-model').innerHTML = '<span class="loading-dots">生成中</span>';
+      try {
+        const response = await BYOK.generateModelEssay({ prompt, targetLevel: parseInt($('model-level').value) || 105 });
+        lastModelResult = response;
+        $('model-output').hidden = false;
+        $('model-content').innerHTML = marked.parse(response);
+        autoSaveHistory('model', response);
+        $('model-output').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } catch (e) {
+        alert('生成失败：' + e.message);
+      } finally {
+        $('generate-model').disabled = false;
+        $('generate-model').innerHTML = '📘 看范文+讲解';
+      }
+    };
+
+    $('copy-model-essay').onclick = async () => {
+      if (!lastModelResult) return;
+      const m = lastModelResult.match(/##\s*📘[^\n]*\n([\s\S]*?)(?=\n---)/);
+      const essay = m ? m[1].trim() : lastModelResult;
+      try {
+        await navigator.clipboard.writeText(essay);
+        $('copy-model-essay').textContent = '✓ 已复制';
+        setTimeout(() => $('copy-model-essay').innerHTML = '📋 复制范文', 2000);
+      } catch (e) { alert('复制失败：' + e.message); }
+    };
+
+    $('export-model').onclick = () => {
+      if (!lastModelResult) return;
+      const header = `# DET 范文 + 讲解\n\n**题目**：${$('prompt').value}\n**生成时间**：${new Date().toLocaleString('zh-CN')}\n\n---\n\n`;
+      const blob = new Blob([header + lastModelResult], { type: 'text/markdown;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `det-范文-${Date.now()}.md`;
+      a.click();
+    };
+
+    // ============= Ask Teacher =============
+
+    function escapeHtml(s) {
+      return (s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    function showTeacherWelcome() {
+      $('teacher-subtitle').textContent = '看到这次精批了';
+    }
+
+    async function askTeacher(question) {
+      if (!question || !question.trim()) return;
+      $('teacher-status').innerHTML = '<span class="loading-dots">老师思考中</span>';
+      $('ask-teacher').disabled = true;
+
+      const conv = $('teacher-conversations');
+      const qDiv = document.createElement('div');
+      qDiv.className = 'wf-card soft';
+      qDiv.style.cssText = 'padding: 8px 10px; font-size: 12px; background: var(--paper); border-color: var(--ink-4);';
+      qDiv.innerHTML = `<div style="color: var(--ink-3); font-size: 10px; margin-bottom: 2px;">🙋 你 · 刚刚</div><div style="color: var(--ink);">${escapeHtml(question)}</div>`;
+      conv.appendChild(qDiv);
+      conv.scrollTop = conv.scrollHeight;
+
+      try {
+        const response = await BYOK.askTeacher({
+          question,
+          prompt: $('prompt').value,
+          answer: $('answer').value,
+          previousReview: lastResult,
+        });
+
+        const aDiv = document.createElement('div');
+        aDiv.className = 'wf-card markdown';
+        aDiv.style.cssText = 'padding: 10px; font-size: 12px; background: var(--paper); border-color: var(--accent);';
+        aDiv.innerHTML = `<div style="color: var(--accent-ink); font-size: 10px; margin-bottom: 4px; font-weight: 600;">👨‍🏫 老师答 · 刚刚</div>${marked.parse(response)}`;
+        conv.appendChild(aDiv);
+        conv.scrollTop = conv.scrollHeight;
+
+        $('teacher-status').innerHTML = '<span style="color: var(--good);">✓ 完成</span>';
+        $('teacher-question').value = '';
+      } catch (e) {
+        $('teacher-status').innerHTML = `<span style="color: var(--bad);">❌ ${e.message}</span>`;
+      } finally {
+        $('ask-teacher').disabled = false;
+      }
+    }
+    $('ask-teacher').onclick = () => askTeacher($('teacher-question').value.trim());
+    $('teacher-question').addEventListener('keydown', e => {
+      if (e.key === 'Enter') askTeacher($('teacher-question').value.trim());
+    });
+    document.querySelectorAll('.quick-q').forEach(btn => {
+      btn.onclick = () => askTeacher(btn.dataset.q);
+    });
+
+    // ============= Practice / Generate Prompt =============
+
+    $('generate-prompt').onclick = async () => {
+      $('generate-prompt').disabled = true;
+      $('practice-status').innerHTML = '<span class="loading-dots">出题中</span>';
+      try {
+        const recentPrompts = getHistory().slice(0, 10).map(h => h.prompt).filter(Boolean);
+        const data = await BYOK.generatePrompt({
+          difficulty: $('difficulty').value,
+          category: $('category').value,
+          mode: currentMode === 'interactive' ? 'interactive' : 'sample',
+          exclude: recentPrompts,
+        });
+
+        if (currentMode === 'interactive') {
+          $('prompt').value = data.part1 || data.prompt || '';
+          $('prompt2').value = data.part2 || '';
+          $('answer').value = '';
+          $('answer2').value = '';
+        } else {
+          $('prompt').value = data.prompt || '';
+          $('answer').value = '';
+        }
+        updateWordCount();
+        updateWordCount2();
+        $('practice-status').innerHTML = '<span style="color: var(--good);">✓ 出题完成，点"开始限时"</span>';
+        $('start-timer').hidden = false;
+        $('output').hidden = true;
+        $('answer').focus();
+      } catch (e) {
+        $('practice-status').innerHTML = `<span style="color: var(--bad);">❌ ${e.message}</span>`;
+      } finally {
+        $('generate-prompt').disabled = false;
+      }
+    };
+
+    // ============= Timer (mode-aware sequential) =============
+
+    let timerInterval = null;
+    let secondsLeft = 300;
+    let timerPhase = null;
+
+    $('start-timer').onclick = () => {
+      startTimer();
+      $('start-timer').hidden = true;
+      $('stop-timer').hidden = false;
+      $('practice-status').innerHTML = '<span style="color: var(--accent-ink);">⏱️ 计时中</span>';
+      $('answer').focus();
+    };
+
+    $('stop-timer').onclick = () => {
+      stopTimer();
+      $('stop-timer').hidden = true;
+      $('start-timer').hidden = false;
+      $('practice-status').innerHTML = '<span style="color: var(--ink-3);">已停止</span>';
+    };
+
+    function startTimer() {
+      stopTimer();
+      if (currentMode === 'interactive') {
+        timerPhase = 'p1';
+        secondsLeft = 300;
+      } else {
+        timerPhase = null;
+        secondsLeft = 300;
+      }
+      updateTimerDisplay();
+      timerInterval = setInterval(() => {
+        secondsLeft--;
+        updateTimerDisplay();
+        if (secondsLeft <= 0) {
+          if (currentMode === 'interactive' && timerPhase === 'p1') {
+            timerPhase = 'p2';
+            secondsLeft = 180;
+            $('practice-status').innerHTML = '<span style="color: var(--accent); font-weight: 700;">⏱️ Part 2 · 3 min</span>';
+            $('answer2').focus();
+            $('answer2').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          } else {
+            stopTimer();
+            $('start-timer').hidden = true;
+            $('stop-timer').hidden = true;
+            $('practice-status').innerHTML = '<span style="color: var(--bad); font-weight: 700;">⏰ 时间到！立即提交</span>';
+            $('timer-display').classList.add('pulse-warn');
+            const total = currentMode === 'interactive'
+              ? ($('answer').value + $('answer2').value).trim()
+              : $('answer').value.trim();
+            if (total.length > 50) $('submit').click();
+          }
+        }
+      }, 1000);
+    }
+
+    function stopTimer() {
+      if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+    }
+
+    function updateTimerDisplay() {
+      const m = Math.floor(secondsLeft / 60);
+      const s = secondsLeft % 60;
+      $('timer-display').textContent = `${m}:${s.toString().padStart(2, '0')}`;
+      $('timer-display').classList.remove('pulse-warn');
+      if (secondsLeft <= 60) {
+        $('timer-display').style.color = 'var(--bad)';
+        $('timer-display').classList.add('pulse-warn');
+      } else if (secondsLeft <= 120) {
+        $('timer-display').style.color = 'var(--accent)';
+      } else {
+        $('timer-display').style.color = 'var(--ink)';
+      }
+      if (currentMode === 'interactive' && timerPhase) {
+        $('timer-display').textContent += ` · ${timerPhase.toUpperCase()}`;
+      }
+    }
+
+    // ============= Correction System =============
+
+    let lastCorrectionResult = '';
+    let lastCorrectionAnswer = '';
+
+    function extractErrorListFromReview(reviewMd) {
+      // Try to extract the "## 所有错误" or "Part 1 错误清单" / "Part 2 错误清单" tables
+      const sections = [];
+      const blocks = reviewMd.split(/\n##\s+/);
+      blocks.forEach(b => {
+        if (/所有错误|错误清单/.test(b.split('\n')[0])) {
+          sections.push('## ' + b.trim());
+        }
+      });
+      return sections.join('\n\n').trim();
+    }
+
+    $('open-correction').onclick = () => {
+      if (!lastResult) { alert('还没有精批结果'); return; }
+      const original = currentMode === 'interactive'
+        ? `[Part 1]\n${$('answer').value}\n\n[Part 2]\n${$('answer2').value}`
+        : $('answer').value;
+      $('correction-original').textContent = original || '(无原文)';
+      $('correction-rewrite').value = original || '';
+      updateCorrectionWordCount();
+
+      const errors = extractErrorListFromReview(lastResult);
+      $('correction-errors').innerHTML = errors
+        ? `<div style="font-weight: 600; color: var(--accent-ink); margin-bottom: 4px;">📋 上次精批指出的问题</div>${marked.parse(errors)}`
+        : '<div style="color: var(--ink-3);">未提取到错误清单，参考上方精批正文修改</div>';
+
+      $('correction-input').hidden = false;
+      $('correction-result').hidden = true;
+      $('correction-panel').hidden = false;
+      $('correction-status').textContent = '';
+      $('correction-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    function closeCorrection() {
+      $('correction-panel').hidden = true;
+      $('correction-status').textContent = '';
+    }
+    $('close-correction').onclick = closeCorrection;
+    $('close-correction-2').onclick = closeCorrection;
+
+    $('copy-original-to-rewrite').onclick = () => {
+      $('correction-rewrite').value = $('correction-original').textContent;
+      updateCorrectionWordCount();
+      $('correction-rewrite').focus();
+    };
+
+    function updateCorrectionWordCount() {
+      const w = ($('correction-rewrite').value.trim().split(/\s+/).filter(Boolean) || []).length;
+      $('correction-word-count').textContent = `${w} 词`;
+    }
+    $('correction-rewrite').addEventListener('input', updateCorrectionWordCount);
+
+    $('submit-correction').onclick = async () => {
+      const rewrite = $('correction-rewrite').value.trim();
+      if (!rewrite) { alert('请填写改写'); return; }
+      const original = $('correction-original').textContent;
+
+      $('submit-correction').disabled = true;
+      $('correction-status').innerHTML = '<span class="loading-dots">老师批改中（30-60 秒）</span>';
+
+      try {
+        const response = await BYOK.correctEssay({
+          prompt: $('prompt').value,
+          originalAnswer: original,
+          rewrittenAnswer: rewrite,
+          previousReview: lastResult,
+          mode: currentMode,
+        });
+
+        lastCorrectionResult = response;
+        lastCorrectionAnswer = rewrite;
+        renderCorrectionResult(response);
+        autoSaveCorrection();
+        $('correction-status').textContent = '';
+      } catch (e) {
+        $('correction-status').innerHTML = `<span style="color: var(--bad);">❌ ${e.message}</span>`;
+      } finally {
+        $('submit-correction').disabled = false;
+      }
+    };
+
+    function renderCorrectionResult(text) {
+      const stMatch = text.match(/<correction>([\s\S]*?)<\/correction>/);
+      let stats = null;
+      if (stMatch) {
+        try {
+          stats = JSON.parse(stMatch[1].trim());
+          text = text.replace(/<correction>[\s\S]*?<\/correction>/, '').trim();
+        } catch {}
+      }
+
+      if (stats) {
+        const total = stats.original || 0;
+        const fixed = stats.fixed || 0;
+        const stillW = stats.stillWrong || 0;
+        const newE = stats.newErrors || 0;
+        const rate = total > 0 ? Math.round((fixed / total) * 100) : 0;
+        const rateColor = rate >= 80 ? 'var(--good)' : rate >= 50 ? 'var(--warn)' : 'var(--bad)';
+        $('correction-stats').innerHTML = `
+          <div style="display: flex; align-items: baseline; justify-content: center; gap: 16px;">
+            <div>
+              <div class="font-mono tnum" style="font-size: 36px; font-weight: 700; color: ${rateColor};">${rate}%</div>
+              <div class="wf-tag">修复率</div>
+            </div>
+            <div style="height: 40px; width: 1.5px; background: var(--ink-4);"></div>
+            <div style="text-align: left; font-size: 13px;">
+              <div>原 ${total} 处错误</div>
+              <div style="color: var(--good);">✓ 修复 ${fixed} 处</div>
+              <div style="color: var(--bad);">✗ 仍错 ${stillW} 处</div>
+              <div style="color: var(--warn);">⚠ 新增 ${newE} 处</div>
+            </div>
+          </div>
+        `;
+      } else {
+        $('correction-stats').innerHTML = '<div style="color: var(--ink-3);">订正完成（无统计数据）</div>';
+      }
+
+      $('correction-content').innerHTML = marked.parse(text);
+      $('correction-input').hidden = true;
+      $('correction-result').hidden = false;
+      $('correction-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function autoSaveCorrection() {
+      if (!lastCorrectionResult) return;
+      const h = getHistory();
+      const item = {
+        date: new Date().toISOString(),
+        type: 'correction',
+        mode: currentMode,
+        prompt: $('prompt').value,
+        answer: lastCorrectionAnswer,
+        originalAnswer: $('correction-original').textContent,
+        previousReviewSnippet: (lastResult || '').slice(0, 500),
+        response: lastCorrectionResult,
+      };
+      h.unshift(item);
+      setHistory(h.slice(0, 100));
+      renderHistory();
+    }
+
+    $('restart-correction').onclick = () => {
+      $('correction-input').hidden = false;
+      $('correction-result').hidden = true;
+      $('correction-rewrite').focus();
+    };
+
+    $('export-correction').onclick = () => {
+      if (!lastCorrectionResult) return;
+      const md = lastCorrectionResult.replace(/<correction>[\s\S]*?<\/correction>/, '').trim();
+      const header = `# DET 订正报告\n\n**题目**：${$('prompt').value}\n**日期**：${new Date().toLocaleString('zh-CN')}\n\n---\n\n## 原文\n\n${$('correction-original').textContent}\n\n## 改写\n\n${lastCorrectionAnswer}\n\n---\n\n`;
+      const blob = new Blob([header + md], { type: 'text/markdown;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `det-订正-${Date.now()}.md`;
+      a.click();
+    };
+
+    // ============= Notes (notebook) =============
+
+    const NOTE_TYPES = {
+      template: { label: '📋 模板', color: 'var(--accent-ink)', bg: 'var(--accent-soft)' },
+      vocab:    { label: '🔤 词汇', color: 'var(--good)', bg: 'rgba(47,122,74,0.10)' },
+      phrase:   { label: '💬 句式', color: '#3b6f8f', bg: 'rgba(59,111,143,0.10)' },
+      exam:     { label: '📝 真题', color: 'var(--warn)', bg: 'rgba(192,139,26,0.12)' },
+      other:    { label: '🗂️ 其他', color: 'var(--ink-3)', bg: 'var(--paper-2)' },
+    };
+
+    const SEED_NOTES = [
+      {
+        id: 'seed-p1-compare-intro',
+        type: 'template',
+        title: '互动写作 P1 · 选择对比类 · Introduction',
+        tags: ['P1', '选择对比', 'intro', '登登'],
+        content: `## 万能模板
+
+> The **contentious**<sup>争议性的</sup> topic **with regard to**<sup>关于</sup> [题目关键词 n/ving] has **engendered**<sup>引发</sup> an **impassioned**<sup>热烈的</sup> **altercation**<sup>争论</sup>. A **considerable**<sup>大量的</sup> number of people **contend**<sup>主张</sup> that [反方观点一句话], whereas I am **predisposed**<sup>倾向于</sup> to **advocate**<sup>支持</sup> that [正方观点一句话].
+
+## 中文翻译
+
+关于 [题目关键词] 的争议性话题引发了热议。很多人认为 ____，但我倾向于主张 ____。
+
+## 填空规则
+
+- **题目关键词** (n/ving)：提取题目关键词，可以直接用题目原词，也可以改写
+- **反方观点一句话** (句子)：简单描述他方观点
+- **正方观点一句话** (句子)：描述我方观点
+
+## 真题填充示例
+
+**题目**: Artists and scientists both benefit society. Compare the contributions of artists and scientists. Which type of contribution do you think is valued more? Give examples.
+
+**填充后**:
+> The contentious topic with regard to **the contributions made by artists and scientists to society** has engendered an impassioned altercation. A considerable number of people contend that **artists contribute more to society**, whereas I am predisposed to advocate that **scientists play a more pivotal role in benefiting people**.
+
+## 高级词汇清单
+
+| 英文 | 中文 |
+|------|------|
+| contentious | 争议性的 |
+| with regard to | 关于 |
+| engender | 引发 |
+| impassioned | 热烈的 |
+| altercation | 争论 |
+| considerable | 大量的 |
+| contend | 主张 |
+| predisposed | 倾向于 |
+| advocate | 支持 |
+| pivotal role | 关键作用 |`,
+        date: new Date().toISOString(),
+        source: '登登教育录播课截图',
+      },
+      {
+        id: 'seed-p1-describe-top',
+        type: 'template',
+        title: '互动写作 P1 / 面试写作 · 描述类 · 顶配版',
+        tags: ['P1', '面试写作', '描述类', '顶配版', '登登'],
+        content: `## 三段式完整结构
+
+### 1️⃣ Introduction · 主旨句（给出题目关键词 + 回答问题）
+
+> Despite the fact that it is challenging to **depict**<sup>描绘</sup> and **generalize**<sup>概括</sup> [题目主题 n/ving], I would **assert**<sup>主张</sup> by **instinct**<sup>直觉</sup> that [回答问题1 句子]. Investigating this topic further, [回答问题2.3.4...]
+
+### 2️⃣ Body · 具体描述
+
+> It was **unquestionably**<sup>毫无疑问地</sup> last year (可替换成别的时间) that [发生了什么事 句子-过去时], which made me **extraordinarily**<sup>非常地</sup> [情绪形容词 积极/消极]. This experience stands out due to its unique **significance**<sup>重要性</sup>, making it memorable/valuable in my work/study/life/... (because/since/as ... 时间来的及可以继续写原因)
+
+### 3️⃣ Conclusion · 重申观点
+
+> In conclusion, **undoubtedly**<sup>无疑地</sup>, the incident did **expose**<sup>使接触</sup> me to [事件 n/ving] and **reshaped**<sup>重塑</sup> my **perception**<sup>看法</sup> of [题目主题关键词 n/ving].
+
+## 填空规则
+
+- **题目主题** (n/ving): 提取题目核心，名词或动名词形式
+- **回答问题1** (句子): 直接给出立场
+- **回答问题2.3.4** : 进一步展开（往下写更多细节）
+- **发生了什么事** (句子，过去时): 真实/虚构的具体事件
+- **情绪形容词**:
+  - 积极: joyful / inspired / grateful / fulfilled / accomplished
+  - 消极: devastated / frustrated / overwhelmed / disheartened
+- **事件** (n/ving): 抽象总结，呼应主题
+- **题目主题关键词**: 收尾呼应开头
+
+## ⏱️ 时态记忆要点
+
+- **Intro 用现在时**（讨论"难以概括"这个抽象状态）
+- **Body 用过去时**（讲具体经历）
+- **Conclusion 用过去时**（事件已经影响了我）
+
+## 📝 适用题型
+
+- 描述经历类: "Tell me about a memorable event..."
+- 描述选择类: "Describe a time when you had to make a difficult decision..."
+- 描述喜好类: "Describe an activity you enjoy..."
+- ❌ **不适合对比题** — 对比题用「选择对比类」模板
+
+## 🎯 高级词汇清单（共 11 个）
+
+| 英文 | 中文 | 用法 |
+|------|------|------|
+| depict | 描绘 | 替代 describe |
+| generalize | 概括 | 替代 summarize |
+| assert | 主张 | I assert that... |
+| by instinct | 凭直觉 | 强调自然反应 |
+| unquestionably | 毫无疑问地 | 时间状语前加强 |
+| extraordinarily | 非常地 | 修饰情绪形容词 |
+| significance | 重要性 | unique significance |
+| undoubtedly | 无疑地 | 收尾强调 |
+| expose | 使接触/揭露 | expose me to + 事件 |
+| reshape | 重塑 | reshape my perception |
+| perception | 看法/感知 | of + 主题 |
+
+## 💡 时间不够怎么办？
+
+省略 Body 第二句 (\`This experience stands out...\` 那一段) → 直接进 Conclusion。骨架仍然完整。`,
+        date: new Date().toISOString(),
+        source: '登登教育录播课截图',
+      },
+    ];
+
+    function getNotes() {
+      try { return JSON.parse(localStorage.getItem('det-notes') || 'null') || SEED_NOTES; }
+      catch { return SEED_NOTES; }
+    }
+    function setNotes(arr) { localStorage.setItem('det-notes', JSON.stringify(arr)); }
+
+    // First-run + ongoing seed merge (新增的 seed 自动入库，不覆盖用户笔记)
+    (function mergeSeedNotes() {
+      const stored = localStorage.getItem('det-notes');
+      if (!stored) { setNotes(SEED_NOTES); return; }
+      try {
+        const existing = JSON.parse(stored) || [];
+        const existingIds = new Set(existing.map(n => n.id));
+        const missing = SEED_NOTES.filter(s => !existingIds.has(s.id));
+        if (missing.length > 0) setNotes([...existing, ...missing]);
+      } catch {
+        setNotes(SEED_NOTES);
+      }
+    })();
+
+    let notesPanelOpen = false;
+    let editingNoteId = null;
+
+    $('toggle-notes').onclick = () => {
+      notesPanelOpen = !notesPanelOpen;
+      $('notes-panel').hidden = !notesPanelOpen;
+      $('notes-toolbar').hidden = !notesPanelOpen;
+      $('notes-arrow').style.transform = notesPanelOpen ? 'rotate(180deg)' : '';
+      if (notesPanelOpen) renderNotes();
+    };
+
+    function stripMarkdown(s) {
+      if (!s) return '';
+      return s
+        .replace(/<sup>[^<]*<\/sup>/g, '')                 // drop <sup>翻译</sup>
+        .replace(/<\/?[a-z][^>]*>/gi, '')                  // drop other html tags
+        .replace(/```[\s\S]*?```/g, '')                    // drop fenced code
+        .replace(/!?\[([^\]]*)\]\([^)]+\)/g, '$1')         // markdown links/images → label
+        .replace(/[*_~`#>]+/g, '')                         // drop md punctuation
+        .replace(/\|/g, ' ')                               // table pipes
+        .replace(/^[\s-]+/gm, '')                          // leading list markers
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    function noteCardHTML(n) {
+      const t = NOTE_TYPES[n.type] || NOTE_TYPES.other;
+      const preview = stripMarkdown(n.content).slice(0, 140);
+      const tagsHTML = (n.tags || []).slice(0, 4).map(tag => `<span style="font-size: 10px; padding: 1px 6px; background: var(--paper-2); border: 1px solid var(--ink-4); border-radius: 999px; color: var(--ink-3);">${escapeHtml(tag)}</span>`).join(' ');
+      return `
+        <div class="wf-card soft" style="padding: 12px; cursor: pointer; transition: all .1s;" onmouseover="this.style.borderColor='var(--ink)'" onmouseout="this.style.borderColor='var(--ink-4)'" onclick="viewNote('${n.id}')">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+            <span style="font-size: 11px; padding: 1px 8px; background: ${t.bg}; color: ${t.color}; border-radius: 999px; font-weight: 600;">${t.label}</span>
+            <span style="font-size: 10px; color: var(--ink-3); font-family: 'JetBrains Mono', monospace;">${new Date(n.date).toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' })}</span>
+          </div>
+          <div style="font-weight: 600; font-size: 14px; color: var(--ink); margin-bottom: 6px; line-height: 1.4;">${escapeHtml(n.title || '(无标题)')}</div>
+          <div style="font-size: 12px; color: var(--ink-3); line-height: 1.5; max-height: 48px; overflow: hidden; margin-bottom: 6px;">${escapeHtml(preview)}${preview.length >= 140 ? '...' : ''}</div>
+          ${tagsHTML ? `<div class="row tight" style="gap: 4px; flex-wrap: wrap;">${tagsHTML}</div>` : ''}
+        </div>
+      `;
+    }
+
+    let viewingNoteId = null;
+
+    window.viewNote = (id) => {
+      const n = getNotes().find(x => x.id === id);
+      if (!n) return;
+      viewingNoteId = id;
+      const t = NOTE_TYPES[n.type] || NOTE_TYPES.other;
+      $('note-viewer-type').textContent = t.label;
+      $('note-viewer-type').style.background = t.bg;
+      $('note-viewer-type').style.color = t.color;
+      $('note-viewer-date').textContent = new Date(n.date).toLocaleString('zh-CN');
+      $('note-viewer-title').textContent = n.title || '(无标题)';
+      $('note-viewer-tags').innerHTML = (n.tags || []).map(tag => `<span style="font-size: 11px; padding: 2px 8px; background: var(--paper-2); border: 1px solid var(--ink-4); border-radius: 999px; color: var(--ink-3);">${escapeHtml(tag)}</span>`).join(' ');
+      $('note-viewer-content').innerHTML = marked.parse(n.content || '');
+      $('note-editor').hidden = true;
+      $('note-viewer').hidden = false;
+      $('note-viewer').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    $('note-viewer-close').onclick = () => {
+      $('note-viewer').hidden = true;
+      viewingNoteId = null;
+    };
+
+    $('note-viewer-edit').onclick = () => {
+      if (!viewingNoteId) return;
+      const n = getNotes().find(x => x.id === viewingNoteId);
+      if (n) {
+        $('note-viewer').hidden = true;
+        openNoteEditor(n);
+      }
+    };
+
+    $('note-viewer-copy').onclick = async () => {
+      if (!viewingNoteId) return;
+      const n = getNotes().find(x => x.id === viewingNoteId);
+      if (!n) return;
+      try {
+        await navigator.clipboard.writeText(n.content || '');
+        $('note-viewer-copy').textContent = '✓ 已复制';
+        setTimeout(() => $('note-viewer-copy').innerHTML = '📋 复制', 1500);
+      } catch (e) { alert('复制失败：' + e.message); }
+    };
+
+    function renderNotes() {
+      const notes = getNotes();
+      const search = $('notes-search').value.trim().toLowerCase();
+      const filter = $('notes-filter').value;
+      const filtered = notes.filter(n => {
+        if (filter && n.type !== filter) return false;
+        if (search) {
+          const haystack = `${n.title} ${n.content} ${(n.tags || []).join(' ')}`.toLowerCase();
+          if (!haystack.includes(search)) return false;
+        }
+        return true;
+      });
+      $('notes-count').textContent = `共 ${notes.length} 条${filtered.length !== notes.length ? ` · 命中 ${filtered.length}` : ''}`;
+      if (filtered.length === 0) {
+        $('notes-list').innerHTML = `<div style="grid-column: 1 / -1; padding: 24px; text-align: center; color: var(--ink-3); font-size: 13px;">${notes.length === 0 ? '还没有笔记。点 + 新笔记 开始记录' : '没有匹配的笔记'}</div>`;
+        return;
+      }
+      $('notes-list').innerHTML = filtered.map(noteCardHTML).join('');
+    }
+
+    $('notes-search').addEventListener('input', renderNotes);
+    $('notes-filter').addEventListener('change', renderNotes);
+
+    $('new-note').onclick = () => openNoteEditor(null);
+
+    window.editNote = (id) => {
+      const n = getNotes().find(x => x.id === id);
+      if (n) openNoteEditor(n);
+    };
+
+    // Save → if currently viewing the same note, refresh viewer
+    function refreshViewerIfActive(id) {
+      if (viewingNoteId && viewingNoteId === id) viewNote(id);
+    }
+
+    function openNoteEditor(note) {
+      editingNoteId = note ? note.id : null;
+      $('note-title').value = note ? note.title : '';
+      $('note-type').value = note ? note.type : 'template';
+      $('note-tags').value = note ? (note.tags || []).join(', ') : '';
+      $('note-content').value = note ? note.content : '';
+      $('note-delete').style.display = note ? '' : 'none';
+      $('note-edit-status').textContent = note ? `编辑 · 创建于 ${new Date(note.date).toLocaleString('zh-CN')}` : '新笔记';
+      $('note-editor').hidden = false;
+      $('note-editor').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      $('note-title').focus();
+    }
+
+    $('note-cancel').onclick = () => {
+      $('note-editor').hidden = true;
+      editingNoteId = null;
+    };
+
+    $('note-save').onclick = () => {
+      const title = $('note-title').value.trim();
+      const content = $('note-content').value.trim();
+      if (!title && !content) { alert('标题或内容不能都为空'); return; }
+      const tags = $('note-tags').value.split(',').map(t => t.trim()).filter(Boolean);
+      const notes = getNotes();
+      let savedId = editingNoteId;
+      if (editingNoteId) {
+        const i = notes.findIndex(n => n.id === editingNoteId);
+        if (i !== -1) {
+          notes[i] = { ...notes[i], title, content, tags, type: $('note-type').value, updated: new Date().toISOString() };
+        }
+      } else {
+        savedId = 'note-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
+        notes.unshift({
+          id: savedId,
+          type: $('note-type').value,
+          title, content, tags,
+          date: new Date().toISOString(),
+        });
+      }
+      setNotes(notes);
+      $('note-editor').hidden = true;
+      editingNoteId = null;
+      renderNotes();
+      if (savedId) viewNote(savedId);  // jump back to rendered view
+    };
+
+    $('note-delete').onclick = () => {
+      if (!editingNoteId) return;
+      if (!confirm('确认删除这条笔记？')) return;
+      setNotes(getNotes().filter(n => n.id !== editingNoteId));
+      $('note-editor').hidden = true;
+      editingNoteId = null;
+      renderNotes();
+    };
+
+    $('export-notes').onclick = () => {
+      const notes = getNotes();
+      if (notes.length === 0) { alert('无笔记'); return; }
+      const md = notes.map(n => {
+        const t = NOTE_TYPES[n.type] || NOTE_TYPES.other;
+        const tags = (n.tags || []).length ? `**标签**: ${n.tags.join(' · ')}\n` : '';
+        return `\n---\n\n# ${t.label} ${n.title}\n\n**日期**: ${new Date(n.date).toLocaleString('zh-CN')}\n${tags}\n${n.content}\n`;
+      }).join('\n');
+      const header = `# DET 笔记本\n\n**导出时间**: ${new Date().toLocaleString('zh-CN')}\n**共**: ${notes.length} 条\n`;
+      const blob = new Blob([header + md], { type: 'text/markdown;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `det-笔记-${new Date().toISOString().slice(0, 10)}.md`;
+      a.click();
+    };
+
+    // ============= Init =============
+    setMode('interview');
+    renderHistory();
+    renderHeader();
+  </script>
+</body>
+</html>
