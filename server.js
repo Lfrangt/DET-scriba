@@ -690,6 +690,47 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  // LLM API proxy (mirror of api/llm-proxy.js for local dev)
+  // 浏览器 BYOK 模式无法直接调 DeepSeek/Kimi 等 API（CORS 拦截），透传一次。
+  if (req.method === 'POST' && req.url === '/api/llm-proxy') {
+    const ALLOWED_HOSTS = new Set([
+      'api.deepseek.com', 'api.moonshot.cn', 'api.moonshot.ai',
+      'dashscope.aliyuncs.com', 'dashscope-intl.aliyuncs.com',
+      'open.bigmodel.cn', 'api.openai.com', 'api.anthropic.com',
+      'generativelanguage.googleapis.com', 'api.groq.com', 'openrouter.ai',
+    ]);
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', async () => {
+      try {
+        const { url, headers = {}, body: payload = '' } = JSON.parse(body || '{}');
+        if (!url) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Missing url' })); return;
+        }
+        const parsed = new URL(url);
+        if (parsed.protocol !== 'https:' || !ALLOWED_HOSTS.has(parsed.hostname)) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Host not allowed: ' + parsed.hostname })); return;
+        }
+        const upstream = await fetch(url, {
+          method: 'POST',
+          headers,
+          body: typeof payload === 'string' ? payload : JSON.stringify(payload),
+        });
+        const text = await upstream.text();
+        res.writeHead(upstream.status, {
+          'Content-Type': upstream.headers.get('Content-Type') || 'application/json',
+        });
+        res.end(text);
+      } catch (e) {
+        res.writeHead(502, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Proxy error: ' + e.message }));
+      }
+    });
+    return;
+  }
+
   // Serve byok.js (client-side BYOK layer)
   if (req.method === 'GET' && req.url === '/byok.js') {
     fs.readFile(path.join(__dirname, 'byok.js'), 'utf-8', (err, data) => {

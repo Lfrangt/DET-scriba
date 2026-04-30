@@ -302,21 +302,28 @@
     return callOpenAICompat({ url: apiBase, key: cfg.apiKey, model, prompt });
   }
 
-  async function callOpenAICompat({ url, key, model, prompt }) {
-    const r = await fetch(url, {
+  // 通过 /api/llm-proxy 转发，绕开浏览器 CORS 限制（DeepSeek/Kimi/Qwen 等不允许跨域）
+  async function fetchViaProxy(url, headers, bodyJson) {
+    return fetch('/api/llm-proxy', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + key,
-      },
-      body: JSON.stringify({
-        model,
-        messages: [{ role: 'user', content: prompt }],
-        stream: false,
-        max_tokens: 8000,
-        temperature: 0.7,
-      }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url, headers, body: bodyJson }),
     });
+  }
+
+  async function callOpenAICompat({ url, key, model, prompt }) {
+    const targetHeaders = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + key,
+    };
+    const targetBody = JSON.stringify({
+      model,
+      messages: [{ role: 'user', content: prompt }],
+      stream: false,
+      max_tokens: 8000,
+      temperature: 0.7,
+    });
+    const r = await fetchViaProxy(url, targetHeaders, targetBody);
     if (!r.ok) {
       const t = await r.text().catch(() => '');
       throw new Error(`API ${r.status}: ${t.slice(0, 300)}`);
@@ -328,20 +335,17 @@
   }
 
   async function callAnthropic({ url, key, model, prompt }) {
-    const r = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': key,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
-      body: JSON.stringify({
-        model,
-        max_tokens: 8000,
-        messages: [{ role: 'user', content: prompt }],
-      }),
+    const targetHeaders = {
+      'Content-Type': 'application/json',
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+    };
+    const targetBody = JSON.stringify({
+      model,
+      max_tokens: 8000,
+      messages: [{ role: 'user', content: prompt }],
     });
+    const r = await fetchViaProxy(url, targetHeaders, targetBody);
     if (!r.ok) {
       const t = await r.text().catch(() => '');
       throw new Error(`API ${r.status}: ${t.slice(0, 300)}`);
