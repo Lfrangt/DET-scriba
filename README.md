@@ -4,6 +4,8 @@
 
 面向：备考 UBC、美本、其他英语录取要求学校的中国 DET 考生。
 
+🌐 **在线试用（无需安装）**：[det-scriba.vercel.app](https://det-scriba.vercel.app) — 自带 API key（推荐 [DeepSeek](https://platform.deepseek.com/api_keys)，5 块够批 1000+ 次）即可使用。
+
 ## Demo
 
 TODO: 加截图
