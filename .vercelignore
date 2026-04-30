@@ -1,0 +1,6 @@
+server.js
+run.sh
+.gstack/
+node_modules/
+*.log
+*.backup
