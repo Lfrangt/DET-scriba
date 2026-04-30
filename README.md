@@ -1,6 +1,6 @@
 # 📝 DET 写作精批
 
-> 给 DET（Duolingo English Test）考生用的写作精批工具 — 7 维度评分 + 错误清单 + 115 级改写。仿登登教育精批格式。
+> 给 DET（Duolingo English Test）考生用的 AI 写作精批工具 — 7 维度评分 + 错误清单 + 115 级改写。
 
 面向：备考 UBC、美本、其他英语录取要求学校的中国 DET 考生。
 
@@ -110,7 +110,7 @@ DET-scriba/
 ├── server.js       # 本地 HTTP 服务器（spawn claude / codex CLI）
 ├── byok.js         # 客户端 BYOK 层（provider 抽象 + 设置弹窗）
 ├── index.html      # 前端单文件
-├── resources/      # 登登教育官方 DET 备考资料（评分校准用）
+├── resources/      # DET 备考资料（评分校准用）
 ├── run.sh          # 启动脚本
 └── README.md
 ```
@@ -123,13 +123,7 @@ DET-scriba/
 
 本项目按 **DET 官方 holistic scoring** 校准（不是 IELTS Task 2 那套标准）。
 
-参考数据：2024-2025 全球考生平均 **110.59**，**115 = 中上水平**。批改严格度对齐登登教育 7 维度精批。
-
----
-
-## 致谢
-
-评分体系和写作模板参考 [登登教育](https://www.dengdengedu.com)（DET 中文培训机构）公开教学资料。`resources/` 目录下是登登公开发布的备考材料，仅用于评分模型校准。
+参考数据：2024-2025 全球考生平均 **110.59**，**115 = 中上水平**。
 
 ---
 
