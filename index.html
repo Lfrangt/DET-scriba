@@ -582,7 +582,10 @@
     <!-- ========== Detailed Analysis (full-width) ========== -->
     <div id="output" class="wf-card soft" hidden style="margin-bottom: 14px;">
       <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-        <div class="wf-tag">📋 详细分析</div>
+        <button id="toggle-output" style="all: unset; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+          <span class="wf-tag">📋 详细分析</span>
+          <span id="toggle-output-arrow" style="color: var(--ink-3); font-size: 11px;">▼</span>
+        </button>
         <div class="row tight">
           <button id="open-correction" class="wf-btn tiny accent">✏️ 改写订正</button>
           <button id="export" class="wf-btn tiny ghost">⬇️ 导出</button>
@@ -643,7 +646,10 @@
     <!-- ========== Model Essay (full-width) ========== -->
     <div id="model-output" class="wf-card soft" hidden style="margin-bottom: 14px; border-color: var(--good);">
       <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-        <div class="wf-tag" style="color: var(--good);">📘 范文 + 讲解</div>
+        <button id="toggle-model" style="all: unset; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+          <span class="wf-tag" style="color: var(--good);">📘 范文 + 讲解</span>
+          <span id="toggle-model-arrow" style="color: var(--ink-3); font-size: 11px;">▼</span>
+        </button>
         <div class="row tight">
           <button id="copy-model-essay" class="wf-btn tiny ghost">📋 复制范文</button>
           <button id="export-model" class="wf-btn tiny ghost">⬇️ 导出</button>
@@ -2380,6 +2386,21 @@
       a.download = `det-笔记-${new Date().toISOString().slice(0, 10)}.md`;
       a.click();
     };
+
+    // ============= Collapsible panels =============
+    function bindToggle(btnId, contentId, arrowId) {
+      const btn = $(btnId);
+      if (!btn) return;
+      btn.onclick = () => {
+        const c = $(contentId);
+        const a = $(arrowId);
+        const collapsed = c.style.display === 'none';
+        c.style.display = collapsed ? '' : 'none';
+        if (a) a.textContent = collapsed ? '▼' : '▶';
+      };
+    }
+    bindToggle('toggle-output', 'output-content', 'toggle-output-arrow');
+    bindToggle('toggle-model', 'model-content', 'toggle-model-arrow');
 
     // ============= Init =============
     setMode('interview');
