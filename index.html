@@ -352,6 +352,98 @@
     ::-webkit-scrollbar { width: 8px; height: 8px; }
     ::-webkit-scrollbar-thumb { background: var(--ink-4); border-radius: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
+
+    /* ============================================ */
+    /* 📱 Mobile responsive (< 768px)               */
+    /* ============================================ */
+    @media (max-width: 768px) {
+      body { font-size: 13px; }
+
+      /* 外层容器收紧 padding */
+      .max-w-\[1400px\] { padding: 10px !important; }
+
+      /* Header 3 列变 1 列 + 字体缩小 */
+      header.wf-card {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+      }
+      #header-score { font-size: 26px !important; }
+      #countdown-days { font-size: 18px !important; }
+      #trend-svg { width: 100%; height: 60px; }
+
+      /* 主网格：输入区 + 老师在线 改为竖排 */
+      #main-grid {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+      }
+      #teacher-rail { min-height: 200px; }
+
+      /* 评分 + 详细分析 改为竖排 */
+      #scores-grid, #score-output {
+        grid-template-columns: 1fr !important;
+      }
+
+      /* 设置面板里的数字 input 横排 */
+      #byok-modal-backdrop > div { padding: 16px !important; }
+
+      /* 按钮 row 强制 wrap，且按钮不能被压成单字竖排 */
+      .row { flex-wrap: wrap; gap: 6px !important; }
+      .wf-btn {
+        white-space: nowrap;
+        flex-shrink: 0;
+        min-width: auto;
+        padding: 6px 10px !important;
+        font-size: 12px !important;
+      }
+      .wf-btn.tiny { padding: 4px 8px !important; font-size: 11px !important; }
+
+      /* 范文级别 selector 整组占满一行 */
+      .row > span[style*="margin-left: auto"] {
+        margin-left: 0 !important;
+        width: 100%;
+        justify-content: flex-start !important;
+        flex-wrap: wrap;
+      }
+
+      /* 学习资料卡片网格收紧 */
+      #resources-list {
+        grid-template-columns: 1fr !important;
+      }
+
+      /* 表格横向滚动而不是溢出挤压 */
+      .markdown { font-size: 12px; }
+      .markdown table { display: block; overflow-x: auto; white-space: nowrap; }
+      .markdown table td, .markdown table th {
+        white-space: normal;
+        min-width: 80px;
+      }
+      .markdown h2 { font-size: 16px !important; }
+      .markdown h3 { font-size: 14px !important; }
+
+      /* 笔记本 / 历史记录卡片网格 */
+      #notes-list { grid-template-columns: 1fr !important; }
+
+      /* 老师在线快捷追问 chips */
+      .quick-q { font-size: 11px !important; padding: 4px 8px !important; }
+
+      /* 齿轮 badge 缩小不挡内容 */
+      #byok-gear {
+        top: 8px !important;
+        right: 10px !important;
+        padding: 4px 8px !important;
+        font-size: 11px !important;
+      }
+      #byok-badge { font-size: 10px !important; }
+
+      /* 模态框宽度占满 */
+      #byok-modal-backdrop > div {
+        max-width: 100% !important;
+        max-height: 92vh !important;
+      }
+
+      /* textarea 高度收紧 */
+      .wf-textarea { font-size: 13px; }
+    }
   </style>
 </head>
 <body>
@@ -428,7 +520,7 @@
     <div class="wf-card soft" style="margin-bottom: 14px;">
       <button id="toggle-resources" style="all: unset; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 4px 0;">
         <span style="font-weight: 600; display: flex; align-items: center; gap: 8px;">
-          📚 学习资料（登登教育官方）
+          📚 学习资料
           <span id="resources-count" class="wf-tag" style="font-weight: 400;"></span>
         </span>
         <span id="resources-arrow" style="color: var(--ink-3); transition: transform .2s;">▼</span>
