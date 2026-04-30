@@ -95,12 +95,13 @@
       region: 'intl',
       requiresKey: true,
       apiBase: 'https://api.moonshot.ai/v1/chat/completions',
-      defaultModel: 'kimi-latest',
+      defaultModel: 'moonshot-v1-32k',
       keyHint: 'sk-...',
       docs: 'https://platform.moonshot.ai/console/api-keys',
       flavor: 'openai',
       setupSteps: [
         '去 <a href="https://platform.moonshot.ai/console/api-keys" target="_blank">platform.moonshot.ai</a> 注册 → New API Key → 复制粘贴到上面',
+        '如果 <code>kimi-latest</code> 报 404，改用 <code>moonshot-v1-32k</code>（通用稳定）',
       ],
     },
     qwen_intl: {
@@ -216,11 +217,14 @@
   function getCfg() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return { provider: 'local' };
+      const defaults = { provider: 'local', currentLevel: 85, targetLevel: 115 };
+      if (!raw) return defaults;
       const c = JSON.parse(raw);
       if (!c.provider || !PROVIDERS[c.provider]) c.provider = 'local';
+      if (typeof c.currentLevel !== 'number') c.currentLevel = 85;
+      if (typeof c.targetLevel !== 'number') c.targetLevel = 115;
       return c;
-    } catch { return { provider: 'local' }; }
+    } catch { return { provider: 'local', currentLevel: 85, targetLevel: 115 }; }
   }
 
   function saveCfg(cfg) {
@@ -1322,6 +1326,18 @@ ${rewrittenAnswer}
     if (document.getElementById('byok-modal-backdrop')) return;
     const cfg = getCfg();
 
+    // Build preset options for the dropdown (filtered for hosted mode)
+    const presetEntries = _hostedMode
+      ? Object.entries(PROVIDERS).filter(([, p]) => p.region !== 'local')
+      : Object.entries(PROVIDERS);
+    const presetGroups = REGIONS.map(region => {
+      const inRegion = presetEntries.filter(([, p]) => p.region === region.id);
+      if (!inRegion.length) return '';
+      return `<optgroup label="${region.title}">${inRegion.map(([key, p]) =>
+        `<option value="${key}" ${cfg.provider === key ? 'selected' : ''}>${p.name}</option>`
+      ).join('')}</optgroup>`;
+    }).join('');
+
     const backdrop = document.createElement('div');
     backdrop.id = 'byok-modal-backdrop';
     backdrop.style.cssText = `
@@ -1334,81 +1350,77 @@ ${rewrittenAnswer}
     modal.style.cssText = `
       background: var(--paper, #fafaf6); border: 1.5px solid var(--ink, #1a1814);
       border-radius: 12px; box-shadow: 4px 6px 0 rgba(26,24,20,0.15);
-      max-width: 560px; width: 100%; max-height: 88vh; overflow: auto;
+      max-width: 480px; width: 100%; max-height: 88vh; overflow: auto;
       padding: 22px; font-family: 'PingFang SC', system-ui, sans-serif;
       color: var(--ink, #1a1814);
     `;
 
-    const visibleProviders = _hostedMode
-      ? Object.entries(PROVIDERS).filter(([, p]) => p.region !== 'local')
-      : Object.entries(PROVIDERS);
-    const renderProvider = ([key, p]) => {
-      const checked = cfg.provider === key ? 'checked' : '';
-      return `
-        <label style="display: block; padding: 10px 12px; border: 1.5px solid var(--ink-4, #c9c2b6); border-radius: 8px; margin-bottom: 6px; cursor: pointer; background: ${cfg.provider === key ? 'var(--accent-soft, #fbe7d6)' : 'transparent'};" data-provider-row="${key}">
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <input type="radio" name="byok-provider" value="${key}" ${checked} style="margin: 0;">
-            <div style="flex: 1;">
-              <div style="font-weight: 600; font-size: 14px;">${p.name}</div>
-              <div style="font-size: 11px; color: var(--ink-3, #8a8378); margin-top: 2px;">${p.tag}</div>
-            </div>
-          </div>
-        </label>`;
-    };
-    const providerOptions = REGIONS.map(region => {
-      const inRegion = visibleProviders.filter(([, p]) => p.region === region.id);
-      if (!inRegion.length) return '';
-      return `
-        <div style="font-size: 11px; font-weight: 700; color: var(--ink-3, #8a8378); margin: 14px 0 6px; padding-bottom: 4px; border-bottom: 1px dashed var(--ink-4, #c9c2b6); letter-spacing: 0.5px;">${region.title}</div>
-        ${inRegion.map(renderProvider).join('')}`;
-    }).join('');
+    const inputStyle = 'width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1.5px solid var(--ink-4, #c9c2b6); border-radius: 6px; font-family: \'JetBrains Mono\', monospace; font-size: 12px; background: var(--paper, #fafaf6); color: var(--ink, #1a1814);';
+    const labelStyle = 'display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px;';
+    const sectionTitle = 'font-size: 11px; font-weight: 700; color: var(--ink-3, #8a8378); margin: 0 0 8px; padding-bottom: 4px; border-bottom: 1px dashed var(--ink-4, #c9c2b6); letter-spacing: 0.5px; text-transform: uppercase;';
+
+    const initialProvider = PROVIDERS[cfg.provider];
+    const isLocalProvider = cfg.provider === 'local';
 
     modal.innerHTML = `
       <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
-        <div style="font-weight: 700; font-size: 18px;">⚙️ AI Provider 设置</div>
+        <div style="font-weight: 700; font-size: 18px;">⚙️ 设置</div>
         <button id="byok-close" style="all: unset; cursor: pointer; font-size: 20px; color: var(--ink-3, #8a8378); padding: 4px 8px;">×</button>
       </div>
 
-      <div style="font-size: 12px; color: var(--ink-3, #8a8378); margin-bottom: 14px; line-height: 1.6;">
-        ${_hostedMode
-          ? '选择 AI provider 并填 API Key 即可开始。Key 仅存在你浏览器的 localStorage，<b>不上传到任何服务器</b>。<br>第一次用？看下面每个 provider 下方的小白三步指南。'
-          : '选择哪个 AI 来批改作文。默认 <b>Local Claude CLI</b>（需本地装 Claude Code）；其他选项需要你自己的 API Key（仅存在你浏览器的 localStorage，不上传任何服务器）。'}
-      </div>
-
-      <div style="margin-bottom: 16px;">${providerOptions}</div>
-
-      <div id="byok-key-section" style="display: ${PROVIDERS[cfg.provider]?.requiresKey ? 'block' : 'none'}; margin-bottom: 14px;">
-        <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px;">API Key</label>
-        <div style="display: flex; gap: 6px;">
-          <input type="password" id="byok-key" value="${(cfg.apiKey || '').replace(/"/g, '&quot;')}"
-                 placeholder="${PROVIDERS[cfg.provider]?.keyHint || ''}"
-                 style="flex: 1; padding: 8px 10px; border: 1.5px solid var(--ink-4, #c9c2b6); border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 12px; background: var(--paper, #fafaf6); color: var(--ink, #1a1814);">
-          <button id="byok-toggle-key" type="button" style="padding: 8px 10px; border: 1.5px solid var(--ink-4, #c9c2b6); background: transparent; border-radius: 6px; cursor: pointer; font-size: 11px;">👁</button>
+      <!-- 个性化 -->
+      <div style="margin-bottom: 18px;">
+        <div style="${sectionTitle}">个性化（让 AI 按你的水平定制批改）</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div>
+            <label style="${labelStyle}">当前 DET Writing 分</label>
+            <input type="number" id="byok-current" value="${cfg.currentLevel}" min="50" max="160" step="5" style="${inputStyle}">
+          </div>
+          <div>
+            <label style="${labelStyle}">想达到的目标分</label>
+            <input type="number" id="byok-target" value="${cfg.targetLevel}" min="60" max="160" step="5" style="${inputStyle}">
+          </div>
         </div>
-        <div id="byok-key-link" style="font-size: 11px; margin-top: 4px; display: ${PROVIDERS[cfg.provider]?.docs ? 'block' : 'none'};">
-          <a id="byok-docs-link" href="${PROVIDERS[cfg.provider]?.docs || '#'}" target="_blank" style="color: var(--accent-ink, #8b3d10); text-decoration: underline;">→ 在哪申请 ${PROVIDERS[cfg.provider]?.name || ''} key</a>
+        <div style="font-size: 11px; color: var(--ink-3, #8a8378); margin-top: 6px;">范围 50-160（DET 满分 160）。AI 会按这两个分数调整改写难度、词汇深度、目标距离。</div>
+      </div>
+
+      <!-- AI 接入 -->
+      <div style="margin-bottom: 14px;">
+        <div style="${sectionTitle}">AI 接入</div>
+
+        <label style="${labelStyle}">快速预设（选完自动填下面 URL/Model）</label>
+        <select id="byok-preset" style="${inputStyle}; padding: 8px 10px; cursor: pointer;">
+          ${presetGroups}
+        </select>
+        <div id="byok-docs-line" style="font-size: 11px; margin-top: 4px; display: ${initialProvider?.docs ? 'block' : 'none'};">
+          <a id="byok-docs-link" href="${initialProvider?.docs || '#'}" target="_blank" style="color: var(--accent-ink, #8b3d10); text-decoration: underline;">→ 在哪申请 ${initialProvider?.name || ''} key</a>
         </div>
       </div>
 
-      <div id="byok-setup-steps" style="display: ${PROVIDERS[cfg.provider]?.setupSteps ? 'block' : 'none'}; margin-bottom: 14px; padding: 12px 14px; background: var(--paper-2, #f3efe6); border: 1px dashed var(--ink-4, #c9c2b6); border-radius: 8px; font-size: 11.5px; line-height: 1.8; color: var(--ink-2, #524b41);">
-        <div style="font-weight: 600; margin-bottom: 6px; color: var(--accent-ink, #8b3d10);">🆕 第一次用 <span id="byok-setup-name">${PROVIDERS[cfg.provider]?.name || ''}</span>？三步上手：</div>
-        <ol id="byok-setup-list" style="margin: 0; padding-left: 18px;">
-          ${(PROVIDERS[cfg.provider]?.setupSteps || []).map(s => `<li style="margin-bottom: 4px;">${s}</li>`).join('')}
-        </ol>
-      </div>
+      <div id="byok-fields" style="display: ${isLocalProvider ? 'none' : 'block'};">
+        <div style="margin-bottom: 12px;">
+          <label style="${labelStyle}">API Endpoint URL</label>
+          <input type="text" id="byok-apibase" value="${(cfg.apiBase || initialProvider?.apiBase || '').replace(/"/g, '&quot;')}"
+                 placeholder="https://api.example.com/v1/chat/completions"
+                 style="${inputStyle}">
+        </div>
 
-      <div id="byok-custom-section" style="display: ${cfg.provider === 'custom' ? 'block' : 'none'}; margin-bottom: 14px;">
-        <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px;">API Endpoint URL</label>
-        <input type="text" id="byok-apibase" value="${(cfg.apiBase || '').replace(/"/g, '&quot;')}"
-               placeholder="https://api.moonshot.cn/v1/chat/completions"
-               style="width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1.5px solid var(--ink-4, #c9c2b6); border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 12px; background: var(--paper, #fafaf6); color: var(--ink, #1a1814);">
-      </div>
+        <div style="margin-bottom: 12px;">
+          <label style="${labelStyle}">API Key</label>
+          <div style="display: flex; gap: 6px;">
+            <input type="password" id="byok-key" value="${(cfg.apiKey || '').replace(/"/g, '&quot;')}"
+                   placeholder="${initialProvider?.keyHint || 'sk-...'}"
+                   style="flex: 1; padding: 8px 10px; border: 1.5px solid var(--ink-4, #c9c2b6); border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 12px; background: var(--paper, #fafaf6); color: var(--ink, #1a1814);">
+            <button id="byok-toggle-key" type="button" style="padding: 8px 10px; border: 1.5px solid var(--ink-4, #c9c2b6); background: transparent; border-radius: 6px; cursor: pointer; font-size: 11px;">👁</button>
+          </div>
+        </div>
 
-      <div id="byok-model-section" style="display: ${PROVIDERS[cfg.provider]?.requiresKey ? 'block' : 'none'}; margin-bottom: 18px;">
-        <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px;">Model（留空用默认）</label>
-        <input type="text" id="byok-model" value="${(cfg.model || '').replace(/"/g, '&quot;')}"
-               placeholder="${PROVIDERS[cfg.provider]?.defaultModel || ''}"
-               style="width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1.5px solid var(--ink-4, #c9c2b6); border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 12px; background: var(--paper, #fafaf6); color: var(--ink, #1a1814);">
+        <div style="margin-bottom: 14px;">
+          <label style="${labelStyle}">Model（留空用预设默认）</label>
+          <input type="text" id="byok-model" value="${(cfg.model || '').replace(/"/g, '&quot;')}"
+                 placeholder="${initialProvider?.defaultModel || ''}"
+                 style="${inputStyle}">
+        </div>
       </div>
 
       <div id="byok-test-result" style="font-size: 12px; margin-bottom: 12px; min-height: 18px;"></div>
@@ -1428,54 +1440,41 @@ ${rewrittenAnswer}
 
     const $$ = id => document.getElementById(id);
 
-    function refreshProviderUI(provider) {
+    function applyPreset(provider) {
       const p = PROVIDERS[provider];
-      $$('byok-key-section').style.display = p.requiresKey ? 'block' : 'none';
-      $$('byok-model-section').style.display = p.requiresKey ? 'block' : 'none';
-      $$('byok-custom-section').style.display = provider === 'custom' ? 'block' : 'none';
-      if (p.keyHint) $$('byok-key').placeholder = p.keyHint;
-      if (p.defaultModel !== undefined) $$('byok-model').placeholder = p.defaultModel;
-      const linkWrap = $$('byok-key-link');
-      if (linkWrap) {
-        if (p.docs) {
-          linkWrap.style.display = 'block';
-          const dl = $$('byok-docs-link');
-          if (dl) {
-            dl.href = p.docs;
-            dl.textContent = `→ 在哪申请 ${p.name} key`;
-          }
-        } else {
-          linkWrap.style.display = 'none';
-        }
+      if (!p) return;
+      const isLocal = provider === 'local';
+      $$('byok-fields').style.display = isLocal ? 'none' : 'block';
+      if (!isLocal) {
+        $$('byok-apibase').value = p.apiBase || '';
+        $$('byok-apibase').placeholder = p.apiBase || 'https://api.example.com/v1/chat/completions';
+        $$('byok-key').value = '';
+        $$('byok-key').placeholder = p.keyHint || 'sk-...';
+        $$('byok-model').value = '';
+        $$('byok-model').placeholder = p.defaultModel || '';
       }
-      const stepsBox = $$('byok-setup-steps');
-      if (stepsBox) {
-        if (p.setupSteps && p.setupSteps.length) {
-          stepsBox.style.display = 'block';
-          $$('byok-setup-name').textContent = p.name;
-          $$('byok-setup-list').innerHTML = p.setupSteps.map(s => `<li style="margin-bottom: 4px;">${s}</li>`).join('');
-        } else {
-          stepsBox.style.display = 'none';
-        }
+      const docsLine = $$('byok-docs-line');
+      if (p.docs) {
+        docsLine.style.display = 'block';
+        $$('byok-docs-link').href = p.docs;
+        $$('byok-docs-link').textContent = `→ 在哪申请 ${p.name} key`;
+      } else {
+        docsLine.style.display = 'none';
       }
-      modal.querySelectorAll('[data-provider-row]').forEach(row => {
-        row.style.background = row.dataset.providerRow === provider ? 'var(--accent-soft, #fbe7d6)' : 'transparent';
-      });
     }
 
-    modal.querySelectorAll('input[name="byok-provider"]').forEach(r => {
-      r.onchange = () => refreshProviderUI(r.value);
-    });
-
+    $$('byok-preset').onchange = e => applyPreset(e.target.value);
     $$('byok-toggle-key').onclick = () => {
       const i = $$('byok-key');
       i.type = i.type === 'password' ? 'text' : 'password';
     };
 
     function readForm() {
-      const provider = modal.querySelector('input[name="byok-provider"]:checked').value;
+      const provider = $$('byok-preset').value;
       return {
         provider,
+        currentLevel: parseInt($$('byok-current').value) || 85,
+        targetLevel: parseInt($$('byok-target').value) || 115,
         apiKey: ($$('byok-key')?.value || '').trim(),
         model: ($$('byok-model')?.value || '').trim(),
         apiBase: ($$('byok-apibase')?.value || '').trim(),
@@ -1486,18 +1485,25 @@ ${rewrittenAnswer}
       const cfgNew = readForm();
       const result = $$('byok-test-result');
       if (cfgNew.provider === 'local') {
-        result.innerHTML = '<span style="color: var(--ink-3);">Local 模式：测试 /api/review 路径...</span>';
+        result.innerHTML = '<span style="color: var(--ink-3);">测试本地 server...</span>';
         try {
           const r = await fetch('/api/resources/list');
-          if (r.ok) result.innerHTML = '<span style="color: var(--good);">✓ Local server 在跑（端口 3737）</span>';
-          else result.innerHTML = `<span style="color: var(--bad);">✗ Local server 没响应（${r.status}）</span>`;
+          if (r.ok) result.innerHTML = '<span style="color: var(--good);">✓ 本地 server 在跑（端口 3737）</span>';
+          else result.innerHTML = `<span style="color: var(--bad);">✗ 本地 server 没响应（${r.status}）</span>`;
         } catch (e) {
-          result.innerHTML = `<span style="color: var(--bad);">✗ 连不上 Local server：${e.message}。请先 \`node server.js\`</span>`;
+          result.innerHTML = `<span style="color: var(--bad);">✗ 连不上本地 server：${e.message}。请先 \`node server.js\`</span>`;
         }
         return;
       }
+      if (!cfgNew.apiKey) {
+        result.innerHTML = '<span style="color: var(--bad);">✗ 请填 API Key</span>';
+        return;
+      }
+      if (!cfgNew.apiBase) {
+        result.innerHTML = '<span style="color: var(--bad);">✗ 请填 API Endpoint URL</span>';
+        return;
+      }
       result.innerHTML = '<span class="loading-dots" style="color: var(--ink-3);">测试中</span>';
-      // Temporarily save to use callLLM with this config
       const prevCfg = getCfg();
       saveCfg(cfgNew);
       try {
@@ -1506,18 +1512,23 @@ ${rewrittenAnswer}
       } catch (e) {
         result.innerHTML = `<span style="color: var(--bad);">✗ ${e.message}</span>`;
       } finally {
-        saveCfg(prevCfg); // restore (user must click 保存 to persist)
+        saveCfg(prevCfg);
       }
     };
 
     $$('byok-save').onclick = () => {
       const cfgNew = readForm();
-      if (cfgNew.provider !== 'local' && PROVIDERS[cfgNew.provider]?.requiresKey && !cfgNew.apiKey) {
-        $$('byok-test-result').innerHTML = '<span style="color: var(--bad);">请填 API Key</span>';
+      const result = $$('byok-test-result');
+      if (cfgNew.targetLevel <= cfgNew.currentLevel) {
+        result.innerHTML = '<span style="color: var(--bad);">✗ 目标分要高于当前分</span>';
         return;
       }
-      if (cfgNew.provider === 'custom' && !cfgNew.apiBase) {
-        $$('byok-test-result').innerHTML = '<span style="color: var(--bad);">自定义 provider 必须填 endpoint URL</span>';
+      if (cfgNew.provider !== 'local' && !cfgNew.apiKey) {
+        result.innerHTML = '<span style="color: var(--bad);">✗ 请填 API Key</span>';
+        return;
+      }
+      if (cfgNew.provider !== 'local' && !cfgNew.apiBase) {
+        result.innerHTML = '<span style="color: var(--bad);">✗ 请填 API Endpoint URL</span>';
         return;
       }
       saveCfg(cfgNew);
@@ -1566,11 +1577,14 @@ ${rewrittenAnswer}
       if (!modal || document.getElementById('byok-hosted-banner')) return;
       const banner = document.createElement('div');
       banner.id = 'byok-hosted-banner';
-      banner.style.cssText = 'background: var(--accent-soft, #fbe7d6); border: 1.5px solid var(--accent, #d96b2b); border-radius: 8px; padding: 12px 14px; margin-bottom: 14px; font-size: 12px; line-height: 1.7; color: var(--accent-ink, #8b3d10);';
-      banner.innerHTML = '👋 <b>欢迎使用 DET-scriba</b><br>选一个 AI 服务填 API Key 即可开始批改。<b>国内用户推荐</b>：<br>• <b>DeepSeek</b>（最便宜，5 块够批 1000+ 次）<br>• <b>Kimi</b> / <b>通义千问</b>（也支持微信/支付宝充值）<br>每个 provider 下方都有"小白三步上手"指南。';
+      banner.style.cssText = 'background: var(--accent-soft, #fbe7d6); border: 1.5px solid var(--accent, #d96b2b); border-radius: 8px; padding: 12px 14px; margin-bottom: 16px; font-size: 12px; line-height: 1.7; color: var(--accent-ink, #8b3d10);';
+      banner.innerHTML = '👋 <b>欢迎使用 DET-scriba</b><br>填一下你的水平 + 选个 AI 服务粘 API Key 就能开始。国内首选 <b>DeepSeek</b>（5 块够批 1000+ 次）。';
       modal.insertBefore(banner, modal.children[1]);
-      const radio = document.querySelector('input[name="byok-provider"][value="deepseek"]');
-      if (radio) { radio.checked = true; radio.dispatchEvent(new Event('change')); }
+      const presetSel = document.getElementById('byok-preset');
+      if (presetSel) {
+        presetSel.value = 'deepseek';
+        presetSel.dispatchEvent(new Event('change'));
+      }
       localStorage.setItem('det-byok-welcomed', '1');
     }, 50);
   }
