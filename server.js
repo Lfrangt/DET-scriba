@@ -97,7 +97,7 @@ function loadResource(filename) {
 // Pre-load 写作模板 for prompt injection
 const WRITING_TEMPLATES = loadResource('写作模板.txt') || '';
 
-const SYSTEM_PROMPT = `你是 DET (Duolingo English Test) Writing Sample 精批专家。仿登登教育精批格式。
+const SYSTEM_PROMPT = `你是 DET (Duolingo English Test) Writing Sample 精批专家。
 
 # DET 官方评分体系（必须严格遵守）
 
@@ -351,7 +351,7 @@ ${answer}
 按格式输出，从 <scores> 标签开始。`;
 }
 
-const INTERACTIVE_SYSTEM_PROMPT = `你是 DET (Duolingo English Test) Interactive Writing 互动写作精批专家。仿登登教育精批格式。
+const INTERACTIVE_SYSTEM_PROMPT = `你是 DET (Duolingo English Test) Interactive Writing 互动写作精批专家。
 
 # DET 官方评分体系（必须严格遵守）
 
@@ -813,7 +813,7 @@ const server = http.createServer((req, res) => {
 
 **${spec.focus}**
 
-# 登登教育官方写作模板（参考骨架）
+# 写作模板（参考骨架）
 
 ${WRITING_TEMPLATES.slice(0, 4000)}
 
@@ -948,7 +948,7 @@ ${WRITING_TEMPLATES.slice(0, 4000)}
 
 ---
 
-## 📋 盲打模板（登登教学法 · 必须给）
+## 📋 盲打模板（必须给）
 
 > **核心**：把范文骨架抽成中文填空模板，让学生考试时按顺序盲打就能写出来。
 
@@ -1192,7 +1192,7 @@ ${question}
         return;
       }
 
-      const correctionPrompt = `你是 DET 写作订正系统，仿登登教育红笔批改风格。
+      const correctionPrompt = `你是 DET 写作订正系统，红笔批改风格。
 
 # 任务
 学生先写了一篇答案，被精批指出了若干错误。学生根据反馈改写了一版。
