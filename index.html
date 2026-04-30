@@ -485,9 +485,9 @@
     <!-- ========== Mode + Practice Strip ========== -->
     <div class="wf-card" style="padding: 12px 16px; margin-bottom: 14px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; background: var(--paper-2);">
       <div class="mode-seg" id="mode-seg">
-        <button class="mode-seg-btn active" data-mode="interview">🎤 写作面试</button>
-        <button class="mode-seg-btn" data-mode="interactive">💬 互动写作</button>
-        <button class="mode-seg-btn" data-mode="photo" disabled>🖼️ 看图写句</button>
+        <button class="mode-seg-btn active" data-mode="interview" title="DET 写作面试 5 min">🎤 DET 面试</button>
+        <button class="mode-seg-btn" data-mode="interactive" title="DET 互动写作 P1+P2">💬 DET 互动</button>
+        <button class="mode-seg-btn" data-mode="academic" title="通用学术写作（无时长/字数限制）">📝 学术写作</button>
       </div>
       <span style="color: var(--ink-4);">|</span>
 
@@ -1097,28 +1097,47 @@
       });
 
       const isInteractive = mode === 'interactive';
+      const isAcademic = mode === 'academic';
       $('part2-prompt-wrap').hidden = !isInteractive;
       $('part2-answer-wrap').hidden = !isInteractive;
 
       if (isInteractive) {
         $('prompt-label').textContent = 'Part 1 题目';
         $('answer-label').firstElementChild.textContent = 'Part 1 答案 (5 min)';
+      } else if (isAcademic) {
+        $('prompt-label').textContent = '题目 / 标题（可选）';
+        $('answer-label').firstElementChild.textContent = '你的作文（粘贴全文）';
       } else {
         $('prompt-label').textContent = '题目（Prompt）';
         $('answer-label').firstElementChild.textContent = '你的答案（Answer）';
       }
 
+      // DET 专属 UI（出题/难度/类别/限时）在学术写作模式下隐藏
+      const detOnly = ['difficulty', 'category', 'generate-prompt', 'start-timer', 'stop-timer', 'timer-display'];
+      detOnly.forEach(id => {
+        const el = $(id);
+        if (el) el.hidden = isAcademic;
+      });
+      // 范文级别在学术模式下也隐藏（学术写作另有改写逻辑）
+      const modelLevelWrap = $('model-level')?.parentElement;
+      if (modelLevelWrap) modelLevelWrap.hidden = isAcademic;
+
       $('start-timer').textContent = isInteractive ? '⏱️ 开始 P1 (5 min)' : '⏱️ 开始 5 min 限时';
-      $('practice-status').textContent = '';
+      $('practice-status').textContent = isAcademic ? '📝 学术写作模式 · 无时长/字数限制' : '';
     }
 
     // ============= Word counter =============
 
     function updateWordCount() {
       const w = ($('answer').value.trim().split(/\s+/).filter(Boolean) || []).length;
+      $('word-count').textContent = `${w} 词`;
+      if (currentMode === 'academic') {
+        // 学术写作无字数限制，不染色
+        $('word-count').style.color = 'var(--ink-3)';
+        return;
+      }
       const target = currentMode === 'interactive' ? 100 : 130;
       const min = currentMode === 'interactive' ? 80 : 100;
-      $('word-count').textContent = `${w} 词`;
       $('word-count').style.color = w >= target ? 'var(--good)' : w >= min ? 'var(--accent-ink)' : 'var(--ink-3)';
     }
     function updateWordCount2() {
@@ -1141,6 +1160,10 @@
         const answer2 = $('answer2').value.trim();
         if (!answer && !answer2) { alert('Part 1 和 Part 2 至少要填一个'); return; }
         payload = { mode: 'interactive', prompt, answer, prompt2, answer2 };
+      } else if (currentMode === 'academic') {
+        if (!answer) { alert('请粘贴你的作文'); return; }
+        const cfg = (typeof BYOK !== 'undefined' && BYOK.getCfg) ? BYOK.getCfg() : {};
+        payload = { mode: 'academic', prompt, answer, currentLevel: cfg.currentLevel, targetLevel: cfg.targetLevel };
       } else {
         if (!answer) { alert('请输入答案'); return; }
         payload = { mode: 'interview', prompt, answer };

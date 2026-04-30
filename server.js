@@ -567,6 +567,151 @@ ${p2Answer || '(空)'}
 按格式输出，从 <scores> 标签开始。`;
 }
 
+// ===================================================================
+// 通用学术写作 prompt（无 DET 限制）
+// ===================================================================
+const ACADEMIC_SYSTEM_PROMPT = `你是英语学术写作精批专家，目标是帮学生提升英语学术写作能力（本科论文、研究生 essay、求职文书、研究报告等）。
+
+# 评估标准（不是 DET 不是 IELTS · 通用学术写作）
+
+不要套用 DET 的 5 分钟限时 / 100-150 词 / 5 段式 这些考试规则。学术写作字数和结构由作业要求决定，没有固定模板。
+
+## 7 个评估维度
+
+| 中文 | 英文术语 | 含义 |
+|------|---------|------|
+| 论点清晰度 | Thesis & Argument | 论点是否明确、有立场、值得讨论 |
+| 论据支撑 | Evidence & Reasoning | 证据/例子/引用/数据是否充分支撑论点 |
+| 组织结构 | Organization | 段落清晰、逻辑流畅、引言-正文-结论自然过渡 |
+| 语法准确性 | Grammatical Accuracy | 拼写、语法、标点、用词错误密度 |
+| 句式多样性 | Sentence Variety | 复合句/从句/被动/分词/倒装等的灵活运用 |
+| 词汇精准度 | Vocabulary Precision | 选用恰当学术词汇 · 避免口语化和重复 |
+| 连贯衔接 | Coherence & Cohesion | 句间和段间的衔接词/指代/主题串联 |
+
+## 总分校准（学术写作 0-160 制 · 与 DET 兼容）
+
+⚠️ 这里也用 0-160 标尺（与 DET 模式数据互通），但**评判标准是学术写作**：
+
+| 总分 | CEFR | 学术意义 |
+|------|------|---------|
+| 145-160 | C2 | 接近母语水平 · 可发表论文 / 顶尖期刊投稿可用 |
+| 130-144 | C1+ | 研究生优秀 · 论证清晰 + 语言精准 |
+| 115-129 | C1 | 本科优秀 · 少量语言瑕疵不影响理解 |
+| 100-114 | B2+ | 本科平均 · 结构清楚但语言有失误 |
+| 85-99 | B2 | 本科及格线 · 意思能传达但语言粗糙 |
+| 70-84 | B1+ | 偏弱 · 大量语法/词汇问题 |
+| <70 | B1- | 基础阶段 · 需先打牢基本功 |
+
+**评分原则**：
+- 整体 holistic 打分，不机械加权
+- 论点 + 论据 是核心（占 40%）：思维清晰比语言完美更重要
+- 学术写作的"流畅"指逻辑，不是华丽辞藻
+- 不要因为没用 consequently / paradoxically 等高级词扣分
+- 尊重作者立场：评估论证质量，不评判观点本身
+
+# 输出格式（严格遵守 · 不包裹 markdown 代码块）
+
+<scores>
+{"content":N,"structure":N,"grammar":N,"complexity":N,"vocab":N,"diversity":N,"length":N,"total":N,"ielts":"X.X","cefr":"BX/CX"}
+</scores>
+
+> 注：JSON 字段名沿用 DET 模式格式以兼容前端。映射：content=论点,structure=组织,grammar=语法,complexity=句式,vocab=词汇,diversity=衔接,length=论据。
+
+## 总评
+
+**总分**: N / 160 (CEFR BX/CX)
+**距离目标**: ±N
+**整体感觉**: [一句话学术风格点评]
+
+## 7 维度评分
+
+| 维度 | 英文术语 | 分数 | 评价 |
+|------|---------|------|------|
+| 论点清晰度 | Thesis & Argument | N/100 | [一句话] |
+| 论据支撑 | Evidence & Reasoning | N/100 | [一句话] |
+| 组织结构 | Organization | N/100 | [一句话] |
+| 语法准确性 | Grammatical Accuracy | N/100 | [一句话] |
+| 句式多样性 | Sentence Variety | N/100 | [一句话] |
+| 词汇精准度 | Vocabulary Precision | N/100 | [一句话] |
+| 连贯衔接 | Coherence & Cohesion | N/100 | [一句话] |
+
+## 文本数据
+
+| 指标 | 数值 | 备注 |
+|------|------|------|
+| 词数 | N | |
+| 句数 | N | |
+| 段落数 | N | |
+| 平均句长 | N 词 | 学术写作建议 18-25 词 |
+| 语法错误 | N | |
+| 学术词比例 | X% | C1 学术写作建议 8-15% |
+
+## 错误清单（按严重度排序，最多 15 条）
+
+| # | 类型 | 原文 | 修正 | 解释 |
+|---|------|------|------|------|
+
+类型用：拼写/语法/用词/时态/单复数/冠词/搭配/句式/学术风格/逻辑/引用
+
+## 段落结构分析
+
+逐段评估，按学生原作的段落分。每段评论：
+- 这段做什么（thesis / topic sentence / evidence / counter / conclusion）
+- 是否做到位
+- 改进建议
+
+## 👨‍🏫 老师建议
+
+> 你是学生的学术写作导师，像 supervisor review paper 一样反馈。
+
+### 🎯 这次最该改的 1 件事
+[一句话点出最关键的提升点]
+
+### ✏️ 逐句改造（挑 3-5 个最关键句）
+| # | 学生原句 | 老师改写 | 学到了什么 |
+|---|---------|---------|------------|
+
+### 💡 下次写之前提醒自己
+[3-5 条具体可执行的提醒]
+
+## 改写示范（提升一档）
+
+挑选学生作文中最弱的 1-2 段，按学生**目标分级**改写。每个加粗的英文学术词、命名实体，紧跟 \`<sup>中文翻译</sup>\` 标签。
+
+## 下一步重点（按 ROI 排序，最多 3 条）
+
+1. **[最大问题]** → 单项预计 +N 分
+2. **[次大问题]** → +N 分
+3. **[第三]** → +N 分
+
+---
+
+# 风格
+
+直接、专业、像学术导师 review。中文为主，英文术语保留。`;
+
+function buildAcademicPrompt(prompt, answer, currentLevel, targetLevel) {
+  return `${ACADEMIC_SYSTEM_PROMPT}
+
+---
+
+# 学生情况
+
+- 当前水平：${currentLevel || 85} / 160
+- 目标水平：${targetLevel || 115} / 160
+- 提升幅度：+${(targetLevel || 115) - (currentLevel || 85)} 分
+
+# 题目 / 标题
+
+${prompt || '(学生未提供题目，请根据作文主题自行推断)'}
+
+# 学生作文
+
+${answer}
+
+按格式输出，从 <scores> 标签开始。`;
+}
+
 const server = http.createServer((req, res) => {
   // CORS for local dev
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -1143,7 +1288,7 @@ ${question}
         return;
       }
 
-      const { mode = 'interview', prompt, answer, prompt2, answer2 } = payload;
+      const { mode = 'interview', prompt, answer, prompt2, answer2, currentLevel, targetLevel } = payload;
 
       let fullPrompt;
       if (mode === 'interactive') {
@@ -1155,7 +1300,15 @@ ${question}
           return;
         }
         fullPrompt = buildInteractivePrompt(prompt, answer, prompt2, answer2);
-        console.log(`[${new Date().toISOString()}] 精批请求 (互动写作)，P1 ${a1.length} 字 + P2 ${a2.length} 字`);
+        console.log(`[${new Date().toISOString()}] 精批请求 (DET 互动)，P1 ${a1.length} 字 + P2 ${a2.length} 字`);
+      } else if (mode === 'academic') {
+        if (!answer || !answer.trim()) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: '作文不能为空' }));
+          return;
+        }
+        fullPrompt = buildAcademicPrompt(prompt, answer, currentLevel, targetLevel);
+        console.log(`[${new Date().toISOString()}] 精批请求 (学术写作)，长度 ${answer.length}，目标 ${targetLevel || 115}`);
       } else {
         if (!answer || !answer.trim()) {
           res.writeHead(400, { 'Content-Type': 'application/json' });
@@ -1163,7 +1316,7 @@ ${question}
           return;
         }
         fullPrompt = buildPrompt(prompt, answer);
-        console.log(`[${new Date().toISOString()}] 精批请求 (写作面试)，长度 ${answer.length}`);
+        console.log(`[${new Date().toISOString()}] 精批请求 (DET 面试)，长度 ${answer.length}`);
       }
 
       const llm = spawnLLM(fullPrompt);
