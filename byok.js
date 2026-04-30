@@ -28,42 +28,98 @@
     },
     deepseek: {
       name: 'DeepSeek',
-      tag: '便宜 20× · 中文好 · 推荐',
+      tag: '🇨🇳 国内 · 微信/支付宝充值 · 5 元够批 1000+ 次 · 推荐',
       requiresKey: true,
       apiBase: 'https://api.deepseek.com/v1/chat/completions',
       defaultModel: 'deepseek-chat',
       keyHint: 'sk-...（在 platform.deepseek.com 申请）',
       docs: 'https://platform.deepseek.com/api_keys',
       flavor: 'openai',
+      setupSteps: [
+        '打开 <a href="https://platform.deepseek.com" target="_blank">platform.deepseek.com</a>，用微信或手机号注册',
+        '左上角「充值」→ 充 5 元（够批 1000+ 篇作文）',
+        '左侧菜单「API Keys」→「创建 API key」→ 起名字 → 创建',
+        '<b>立刻复制 key</b>（关掉窗口就再也看不到完整 key 了）',
+        '回到这里，把 key 粘贴到上面的「API Key」框 → 点保存',
+      ],
+    },
+    kimi: {
+      name: 'Kimi (Moonshot)',
+      tag: '🇨🇳 国内 · 长上下文 · 中文写作好',
+      requiresKey: true,
+      apiBase: 'https://api.moonshot.cn/v1/chat/completions',
+      defaultModel: 'moonshot-v1-32k',
+      keyHint: 'sk-...（在 platform.moonshot.cn 申请）',
+      docs: 'https://platform.moonshot.cn/console/api-keys',
+      flavor: 'openai',
+      setupSteps: [
+        '打开 <a href="https://platform.moonshot.cn" target="_blank">platform.moonshot.cn</a>，邮箱或扫码注册',
+        '右上角用户菜单 →「充值」→ 充 5-10 元（Kimi 比 DeepSeek 贵 ~10×）',
+        '「API Key 管理」→「新建」→ 复制 key',
+        '回到这里，粘贴到上面 API Key 框 → 点保存',
+      ],
+    },
+    qwen: {
+      name: 'Qwen (通义千问)',
+      tag: '🇨🇳 阿里云 · 首次有免费额度',
+      requiresKey: true,
+      apiBase: 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',
+      defaultModel: 'qwen-plus',
+      keyHint: 'sk-...（在 bailian.console.aliyun.com 申请）',
+      docs: 'https://bailian.console.aliyun.com/?apiKey=1#/api-key',
+      flavor: 'openai',
+      setupSteps: [
+        '打开 <a href="https://bailian.console.aliyun.com" target="_blank">bailian.console.aliyun.com</a>，用阿里云账号登录（没有就注册）',
+        '左侧菜单「API-KEY」→「创建 API Key」→ 复制',
+        '阿里云账号通常自带百万 token 免费额度，不充钱也能用',
+        '回到这里，粘贴到上面 API Key 框 → 点保存',
+      ],
     },
     anthropic: {
       name: 'Anthropic Claude',
-      tag: '⚠️ Claude Max/Pro 网页订阅不能用 · 需 console.anthropic.com 的 API key · 效果最好',
+      tag: '⚠️ Claude Max/Pro 网页订阅不能用 · 需国际信用卡 · 效果最好',
       requiresKey: true,
       apiBase: 'https://api.anthropic.com/v1/messages',
       defaultModel: 'claude-sonnet-4-5-20250929',
       keyHint: 'sk-ant-...（在 console.anthropic.com 申请）',
       docs: 'https://console.anthropic.com/settings/keys',
       flavor: 'anthropic',
+      setupSteps: [
+        '⚠️ 需国际信用卡 + 可能要科学上网',
+        '<a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> 注册 → Plans & Billing → 充值至少 $5',
+        'API Keys → Create Key → 复制（sk-ant-... 开头）',
+        '回到这里，粘贴到上面 API Key 框 → 点保存',
+      ],
     },
     openai: {
       name: 'OpenAI',
-      tag: '⚠️ ChatGPT Plus/Pro 网页订阅不能用 · 需 platform.openai.com 的 API key',
+      tag: '⚠️ ChatGPT Plus/Pro 订阅不能用 · 需国际信用卡',
       requiresKey: true,
       apiBase: 'https://api.openai.com/v1/chat/completions',
       defaultModel: 'gpt-4o',
       keyHint: 'sk-...（在 platform.openai.com 申请）',
       docs: 'https://platform.openai.com/api-keys',
       flavor: 'openai',
+      setupSteps: [
+        '⚠️ 需国际信用卡 + 科学上网',
+        '<a href="https://platform.openai.com" target="_blank">platform.openai.com</a> 登录 → Billing → 充值至少 $5',
+        'API Keys → Create new secret key → 复制',
+        '回到这里，粘贴到上面 API Key 框 → 点保存',
+      ],
     },
     custom: {
       name: 'OpenAI 兼容（自定义）',
-      tag: 'Kimi / Qwen / 本地 Ollama 等',
+      tag: 'Ollama 本地 / Together.ai / Groq / 智谱 等',
       requiresKey: true,
       defaultModel: '',
       keyHint: '任意 OpenAI 兼容 endpoint 的 key',
       flavor: 'openai',
       customizable: true,
+      setupSteps: [
+        '适用于：本地 Ollama、Together.ai、Groq、智谱 GLM 等任意 OpenAI 兼容服务',
+        '需要你手动填 API Endpoint URL + Model 名（去对应服务商网站查）',
+        '⚠️ Vercel 网页版无法访问 http://localhost（mixed content 拦截）',
+      ],
     },
   };
 
@@ -1193,7 +1249,10 @@ ${rewrittenAnswer}
       color: var(--ink, #1a1814);
     `;
 
-    const providerOptions = Object.entries(PROVIDERS).map(([key, p]) => {
+    const visibleProviders = _hostedMode
+      ? Object.entries(PROVIDERS).filter(([key]) => key !== 'local')
+      : Object.entries(PROVIDERS);
+    const providerOptions = visibleProviders.map(([key, p]) => {
       const checked = cfg.provider === key ? 'checked' : '';
       return `
         <label style="display: block; padding: 10px 12px; border: 1.5px solid var(--ink-4, #c9c2b6); border-radius: 8px; margin-bottom: 8px; cursor: pointer; background: ${cfg.provider === key ? 'var(--accent-soft, #fbe7d6)' : 'transparent'};" data-provider-row="${key}">
@@ -1214,7 +1273,9 @@ ${rewrittenAnswer}
       </div>
 
       <div style="font-size: 12px; color: var(--ink-3, #8a8378); margin-bottom: 14px; line-height: 1.6;">
-        选择哪个 AI 来批改作文。默认 <b>Local Claude CLI</b>（需本地装 Claude Code）；其他选项需要你自己的 API Key（仅存在你浏览器的 localStorage，不上传任何服务器）。
+        ${_hostedMode
+          ? '选择 AI provider 并填 API Key 即可开始。Key 仅存在你浏览器的 localStorage，<b>不上传到任何服务器</b>。<br>第一次用？看下面每个 provider 下方的小白三步指南。'
+          : '选择哪个 AI 来批改作文。默认 <b>Local Claude CLI</b>（需本地装 Claude Code）；其他选项需要你自己的 API Key（仅存在你浏览器的 localStorage，不上传任何服务器）。'}
       </div>
 
       <div style="margin-bottom: 16px;">${providerOptions}</div>
@@ -1227,9 +1288,16 @@ ${rewrittenAnswer}
                  style="flex: 1; padding: 8px 10px; border: 1.5px solid var(--ink-4, #c9c2b6); border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 12px; background: var(--paper, #fafaf6); color: var(--ink, #1a1814);">
           <button id="byok-toggle-key" type="button" style="padding: 8px 10px; border: 1.5px solid var(--ink-4, #c9c2b6); background: transparent; border-radius: 6px; cursor: pointer; font-size: 11px;">👁</button>
         </div>
-        <div id="byok-key-link" style="font-size: 11px; margin-top: 4px;">
-          <a id="byok-docs-link" href="${PROVIDERS[cfg.provider]?.docs || '#'}" target="_blank" style="color: var(--accent-ink, #8b3d10); text-decoration: underline;">→ 在哪申请 ${PROVIDERS[cfg.provider]?.name} key</a>
+        <div id="byok-key-link" style="font-size: 11px; margin-top: 4px; display: ${PROVIDERS[cfg.provider]?.docs ? 'block' : 'none'};">
+          <a id="byok-docs-link" href="${PROVIDERS[cfg.provider]?.docs || '#'}" target="_blank" style="color: var(--accent-ink, #8b3d10); text-decoration: underline;">→ 在哪申请 ${PROVIDERS[cfg.provider]?.name || ''} key</a>
         </div>
+      </div>
+
+      <div id="byok-setup-steps" style="display: ${PROVIDERS[cfg.provider]?.setupSteps ? 'block' : 'none'}; margin-bottom: 14px; padding: 12px 14px; background: var(--paper-2, #f3efe6); border: 1px dashed var(--ink-4, #c9c2b6); border-radius: 8px; font-size: 11.5px; line-height: 1.8; color: var(--ink-2, #524b41);">
+        <div style="font-weight: 600; margin-bottom: 6px; color: var(--accent-ink, #8b3d10);">🆕 第一次用 <span id="byok-setup-name">${PROVIDERS[cfg.provider]?.name || ''}</span>？三步上手：</div>
+        <ol id="byok-setup-list" style="margin: 0; padding-left: 18px;">
+          ${(PROVIDERS[cfg.provider]?.setupSteps || []).map(s => `<li style="margin-bottom: 4px;">${s}</li>`).join('')}
+        </ol>
       </div>
 
       <div id="byok-custom-section" style="display: ${cfg.provider === 'custom' ? 'block' : 'none'}; margin-bottom: 14px;">
@@ -1270,11 +1338,27 @@ ${rewrittenAnswer}
       $$('byok-custom-section').style.display = provider === 'custom' ? 'block' : 'none';
       if (p.keyHint) $$('byok-key').placeholder = p.keyHint;
       if (p.defaultModel !== undefined) $$('byok-model').placeholder = p.defaultModel;
-      if (p.docs) {
-        const dl = $$('byok-docs-link');
-        if (dl) {
-          dl.href = p.docs;
-          dl.textContent = `→ 在哪申请 ${p.name} key`;
+      const linkWrap = $$('byok-key-link');
+      if (linkWrap) {
+        if (p.docs) {
+          linkWrap.style.display = 'block';
+          const dl = $$('byok-docs-link');
+          if (dl) {
+            dl.href = p.docs;
+            dl.textContent = `→ 在哪申请 ${p.name} key`;
+          }
+        } else {
+          linkWrap.style.display = 'none';
+        }
+      }
+      const stepsBox = $$('byok-setup-steps');
+      if (stepsBox) {
+        if (p.setupSteps && p.setupSteps.length) {
+          stepsBox.style.display = 'block';
+          $$('byok-setup-name').textContent = p.name;
+          $$('byok-setup-list').innerHTML = p.setupSteps.map(s => `<li style="margin-bottom: 4px;">${s}</li>`).join('');
+        } else {
+          stepsBox.style.display = 'none';
         }
       }
       modal.querySelectorAll('[data-provider-row]').forEach(row => {
@@ -1349,6 +1433,11 @@ ${rewrittenAnswer}
     const badge = document.getElementById('byok-badge');
     if (!badge) return;
     const cfg = getCfg();
+    if (_hostedMode && cfg.provider === 'local') {
+      badge.textContent = '未配置 ↗';
+      badge.title = '点击配置 AI provider';
+      return;
+    }
     const p = PROVIDERS[cfg.provider];
     badge.textContent = p ? p.name : 'Local';
     badge.title = p ? p.tag : '';
@@ -1381,7 +1470,7 @@ ${rewrittenAnswer}
       const banner = document.createElement('div');
       banner.id = 'byok-hosted-banner';
       banner.style.cssText = 'background: var(--accent-soft, #fbe7d6); border: 1.5px solid var(--accent, #d96b2b); border-radius: 8px; padding: 12px 14px; margin-bottom: 14px; font-size: 12px; line-height: 1.7; color: var(--accent-ink, #8b3d10);';
-      banner.innerHTML = '👋 <b>欢迎使用 DET-scriba 在线版</b><br>这是浏览器版本，<b>Local CLI 模式不可用</b>（那需要 git clone 项目到本地跑 server）。<br>下面选一个 AI provider 填 API key 即可开始：<br>• <b>DeepSeek</b>（推荐 · 便宜 · 中文好 · 5 块够批 1000+ 次）<br>• OpenAI / Anthropic / 其他 OpenAI 兼容 API';
+      banner.innerHTML = '👋 <b>欢迎使用 DET-scriba</b><br>选一个 AI 服务填 API Key 即可开始批改。<b>国内用户推荐</b>：<br>• <b>DeepSeek</b>（最便宜，5 块够批 1000+ 次）<br>• <b>Kimi</b> / <b>通义千问</b>（也支持微信/支付宝充值）<br>每个 provider 下方都有"小白三步上手"指南。';
       modal.insertBefore(banner, modal.children[1]);
       const radio = document.querySelector('input[name="byok-provider"][value="deepseek"]');
       if (radio) { radio.checked = true; radio.dispatchEvent(new Event('change')); }
@@ -1392,6 +1481,7 @@ ${rewrittenAnswer}
   async function bootstrap() {
     injectGearButton();
     await probeServer();
+    updateProviderBadge();
     if (_hostedMode && !localStorage.getItem(STORAGE_KEY)) {
       showHostedWelcome();
     }
