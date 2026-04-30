@@ -83,6 +83,16 @@
 
   function isLocal() { return getCfg().provider === 'local'; }
 
+  // Hosted mode detection: if no local server is reachable, /api/* will 404.
+  // Set after probing on startup. When true, treat `local` provider as unavailable.
+  let _hostedMode = false;
+  async function probeServer() {
+    try {
+      const r = await fetch('/api/resources/list', { method: 'GET' });
+      if (!r.ok) _hostedMode = true;
+    } catch { _hostedMode = true; }
+  }
+
   // ===================================================================
   // Resource fetcher: works in both modes
   //   Local: server.js exposes /api/resources/<file> and /api/resources/list
@@ -100,7 +110,7 @@
   ];
 
   async function fetchResourceList() {
-    if (isLocal()) {
+    if (isLocal() && !_hostedMode) {
       const r = await fetch('/api/resources/list');
       const j = await r.json();
       return j.resources;
@@ -111,7 +121,7 @@
   const _resourceCache = {};
   async function fetchResource(file) {
     if (_resourceCache[file]) return _resourceCache[file];
-    const url = isLocal()
+    const url = (isLocal() && !_hostedMode)
       ? '/api/resources/' + encodeURIComponent(file)
       : './resources/' + encodeURIComponent(file);
     const r = await fetch(url);
@@ -1082,7 +1092,7 @@ ${rewrittenAnswer}
   // ===================================================================
 
   async function reviewEssay(payload) {
-    if (isLocal()) {
+    if (isLocal() && !_hostedMode) {
       const r = await fetch('/api/review', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1099,7 +1109,7 @@ ${rewrittenAnswer}
   }
 
   async function generatePrompt(payload) {
-    if (isLocal()) {
+    if (isLocal() && !_hostedMode) {
       const r = await fetch('/api/generate-prompt', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1115,7 +1125,7 @@ ${rewrittenAnswer}
   }
 
   async function generateModelEssay(payload) {
-    if (isLocal()) {
+    if (isLocal() && !_hostedMode) {
       const r = await fetch('/api/generate-model', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1130,7 +1140,7 @@ ${rewrittenAnswer}
   }
 
   async function askTeacher(payload) {
-    if (isLocal()) {
+    if (isLocal() && !_hostedMode) {
       const r = await fetch('/api/ask-teacher', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1145,7 +1155,7 @@ ${rewrittenAnswer}
   }
 
   async function correctEssay(payload) {
-    if (isLocal()) {
+    if (isLocal() && !_hostedMode) {
       const r = await fetch('/api/correct', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1362,6 +1372,31 @@ ${rewrittenAnswer}
     updateProviderBadge();
   }
 
+  function showHostedWelcome() {
+    if (localStorage.getItem('det-byok-welcomed')) return;
+    openSettings();
+    setTimeout(() => {
+      const modal = document.querySelector('#byok-modal-backdrop > div');
+      if (!modal || document.getElementById('byok-hosted-banner')) return;
+      const banner = document.createElement('div');
+      banner.id = 'byok-hosted-banner';
+      banner.style.cssText = 'background: var(--accent-soft, #fbe7d6); border: 1.5px solid var(--accent, #d96b2b); border-radius: 8px; padding: 12px 14px; margin-bottom: 14px; font-size: 12px; line-height: 1.7; color: var(--accent-ink, #8b3d10);';
+      banner.innerHTML = '👋 <b>欢迎使用 DET-scriba 在线版</b><br>这是浏览器版本，<b>Local CLI 模式不可用</b>（那需要 git clone 项目到本地跑 server）。<br>下面选一个 AI provider 填 API key 即可开始：<br>• <b>DeepSeek</b>（推荐 · 便宜 · 中文好 · 5 块够批 1000+ 次）<br>• OpenAI / Anthropic / 其他 OpenAI 兼容 API';
+      modal.insertBefore(banner, modal.children[1]);
+      const radio = document.querySelector('input[name="byok-provider"][value="deepseek"]');
+      if (radio) { radio.checked = true; radio.dispatchEvent(new Event('change')); }
+      localStorage.setItem('det-byok-welcomed', '1');
+    }, 50);
+  }
+
+  async function bootstrap() {
+    injectGearButton();
+    await probeServer();
+    if (_hostedMode && !localStorage.getItem(STORAGE_KEY)) {
+      showHostedWelcome();
+    }
+  }
+
   // expose
   window.BYOK = {
     PROVIDERS, getCfg, saveCfg, openSettings, isLocal,
@@ -1371,8 +1406,8 @@ ${rewrittenAnswer}
   };
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', injectGearButton);
+    document.addEventListener('DOMContentLoaded', bootstrap);
   } else {
-    injectGearButton();
+    bootstrap();
   }
 })();
