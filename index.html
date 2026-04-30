@@ -1626,15 +1626,64 @@
       lastRewrite = '';
     };
 
+    // 不同范文级别对应不同质量的示例（让用户切换级别能看到/测试相应水平的写作）
+    const INTERVIEW_EXAMPLES = {
+      95: {
+        prompt: "Some jobs involve frequent travel or relocation, which can impact a person's lifestyle. Would you be open to moving or traveling often for work? Why or why not?",
+        answer: "yes,i can. In my opinion, it is really depence on personal lifestyle. As for me, I am single , so i can surfer relocating frequently. Besides, moving to a new city, so that i can experience different lifestyle, which is intersting for me. Furthermore, nowadays we have many job is remote, which means our job can not be restrict by the location or time."
+      },
+      105: {
+        prompt: "Some jobs involve frequent travel or relocation, which can impact a person's lifestyle. Would you be open to moving or traveling often for work? Why or why not?",
+        answer: "Personally, I would be open to relocating for work, as long as the opportunity matches my career goals. Being single and in my early twenties, I have fewer responsibilities and can adapt to new environments quite easily. Living in a different city would also expose me to new cultures and broaden my perspective on different industries. However, frequent travel can be exhausting if it is not managed well, so a balance between work and personal life is important to maintain."
+      },
+      115: {
+        prompt: "Some jobs involve frequent travel or relocation, which can impact a person's lifestyle. Would you be open to moving or traveling often for work? Why or why not?",
+        answer: "I would readily embrace frequent travel or relocation if the role offered meaningful career growth. As a computer science student with no family obligations, I see relocation as an investment rather than a sacrifice. For instance, my cousin who moved from Beijing to Singapore for a fintech position doubled her salary within two years and built a strong global network. Furthermore, remote-collaboration tools now allow professionals to maintain personal relationships across distances. While constant travel can be tiring, the long-term gains in skills and exposure typically outweigh short-term inconvenience."
+      },
+      125: {
+        prompt: "Some jobs involve frequent travel or relocation, which can impact a person's lifestyle. Would you be open to moving or traveling often for work? Why or why not?",
+        answer: "I would unhesitatingly accept a role requiring frequent relocation, viewing geographical flexibility as a strategic asset rather than a burden. Three considerations inform this stance. First, mobility accelerates career compounding: LinkedIn's 2024 Workforce Report indicates professionals who relocate before age 30 advance to senior roles 1.7 times faster on average. Second, personal observation confirms this—my cousin's transition from Beijing to Singapore in 2022 yielded a 90% salary increase alongside cross-border regulatory expertise that her stationary peers simply could not acquire. Third, modern collaboration tools like Linear and Loom have largely dissolved the geographic barriers that historically penalized relocators. Critics may argue that constant movement erodes personal stability, yet intentional mobility, paired with deliberate digital relationships, ultimately produces both compounding growth and grounded human ties."
+      },
+    };
+
+    const ACADEMIC_EXAMPLES = {
+      95: {
+        prompt: "The role of social media in education",
+        answer: "Social media is everywhere now and many student use it everyday. Some teacher think social media is bad for learning because student spend too much time on it instead of doing homework. But i think social media also have some good side. For example, student can join study group on WeChat or watch educational video on TikTok. So social media is not totally bad. Teacher should help student to use it in good way."
+      },
+      115: {
+        prompt: "The role of social media in education",
+        answer: "Social media has fundamentally reshaped how students access and exchange academic information. While critics argue that platforms like TikTok and Instagram primarily distract learners, this view overlooks their pedagogical potential. For instance, Khan Academy's YouTube channel has reached over 8 million subscribers, making advanced math accessible to students whose schools lack resources. Moreover, study communities on Discord enable peer-to-peer learning that traditional classrooms rarely facilitate. However, the risks are real: a 2023 Stanford study found students who scrolled social media during study sessions retained 27% less information. The key, therefore, is not banning these tools but teaching students to deploy them intentionally—as supplements rather than substitutes for focused work."
+      },
+      125: {
+        prompt: "The role of social media in education",
+        answer: "The integration of social media into educational practice represents one of the most consequential pedagogical shifts of the past decade, yet its impact remains contested in ways that demand more careful analysis than partisan debate typically allows. Proponents emphasize democratized access: Khan Academy's YouTube channel, with over 8 million subscribers, has demonstrably narrowed achievement gaps in under-resourced communities, while platforms like Discord have enabled the spontaneous formation of peer-learning networks across geographic and institutional boundaries. Yet a 2023 Stanford study revealed that students who multitasked with social media during study sessions retained 27% less material than focused peers—a finding consistent with cognitive load theory's predictions about attention fragmentation. The productive question, therefore, is not whether social media belongs in education, but how educators can scaffold its use: framing platforms as supplementary tools deployed during specified study windows, rather than as ambient companions whose constant availability silently erodes deep learning. Without such intentional design, the technology's promise—universal access to expert instruction—will remain shadowed by its costs."
+      },
+    };
+
+    function pickByLevel(map, level) {
+      if (map[level]) return map[level];
+      const levels = Object.keys(map).map(Number).sort((a, b) => a - b);
+      const closest = levels.reduce((p, c) => Math.abs(c - level) < Math.abs(p - level) ? c : p, levels[0]);
+      return map[closest];
+    }
+
     $('example').onclick = () => {
+      const level = parseInt($('model-level')?.value) || 105;
       if (currentMode === 'interactive') {
+        // 互动模式只有一个示例（115 水平）
         $('prompt').value = "Tell us about a memorable trip you took recently. What made it special?";
         $('answer').value = "Last summer I went to Tokyo with my family. It was special because we walked through Shinjuku at night, and the neon signs reflected on wet streets after rain — I had never seen anything like it. We also tried tonkotsu ramen at a small shop where the chef explained the broth takes 12 hours to make. That moment showed me how craftsmanship can be quiet but powerful.";
         $('prompt2').value = "What did you learn from this trip that changed how you see things?";
         $('answer2').value = "It taught me that depth often hides in details. Before, I valued big achievements. Now I notice small acts of dedication — like that ramen chef — and find them more inspiring than headlines.";
+      } else if (currentMode === 'academic') {
+        const ex = pickByLevel(ACADEMIC_EXAMPLES, level);
+        $('prompt').value = ex.prompt;
+        $('answer').value = ex.answer;
       } else {
-        $('prompt').value = "Some jobs involve frequent travel or relocation, which can impact a person's lifestyle. Would you be open to moving or traveling often for work? Why or why not?";
-        $('answer').value = "yes,i can. In my opinion, it is really depence on personal lifestyle. As for me, I am single , so i can surfer relocating frequently. Besides, moving to a new city, so that i can experience different lifestyle, which is intersting for me. Furthermore, nowadays we have many job is remote, which means our job can not be restrict by the location or time.";
+        const ex = pickByLevel(INTERVIEW_EXAMPLES, level);
+        $('prompt').value = ex.prompt;
+        $('answer').value = ex.answer;
       }
       updateWordCount();
       updateWordCount2();
