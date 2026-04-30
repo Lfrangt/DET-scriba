@@ -19,9 +19,16 @@
 
   const STORAGE_KEY = 'det-byok-config';
 
-  // region: local | cn | intl | custom — used for grouping in settings modal
+  // region: demo | local | cn | intl | custom — used for grouping in settings modal
   // setupSteps: terse 2-line guide (注册 + 拿 key 粘贴), 充值流程让平台自己引导
   const PROVIDERS = {
+    demo: {
+      name: '🎁 限时免费内测',
+      tag: '共享额度 · 每天 20 次 · 不用任何 API Key',
+      region: 'demo',
+      requiresKey: false,
+      // backend uses DEEPSEEK_DEMO_KEY env var
+    },
     local: {
       name: 'Local Claude CLI',
       tag: '订阅免费',
@@ -208,6 +215,7 @@
   };
 
   const REGIONS = [
+    { id: 'demo',   title: '🎁 限时免费' },
     { id: 'local',  title: '💻 本地 CLI' },
     { id: 'cn',     title: '🇨🇳 国内站' },
     { id: 'intl',   title: '🌍 海外站' },
@@ -225,6 +233,13 @@
       if (typeof c.targetLevel !== 'number') c.targetLevel = 115;
       return c;
     } catch { return { provider: 'local', currentLevel: 85, targetLevel: 115 }; }
+  }
+
+  // Hosted 模式下 local 不可用 → 视为需要走 BYOK/demo 路径
+  function effectiveProvider() {
+    const cfg = getCfg();
+    if (_hostedMode && cfg.provider === 'local') return 'demo';
+    return cfg.provider;
   }
 
   function saveCfg(cfg) {
@@ -289,6 +304,7 @@
     const p = PROVIDERS[cfg.provider];
     if (!p) throw new Error('Unknown provider: ' + cfg.provider);
     if (cfg.provider === 'local') throw new Error('Local 模式不应调用 callLLM');
+    if (cfg.provider === 'demo') return callDemo(prompt);
     if (p.requiresKey && !cfg.apiKey) throw new Error('请先在 ⚙️ 设置中填 API Key');
 
     const apiBase = (cfg.provider === 'custom' ? cfg.apiBase : p.apiBase) || '';
@@ -300,6 +316,54 @@
       return callAnthropic({ url: apiBase, key: cfg.apiKey, model, prompt });
     }
     return callOpenAICompat({ url: apiBase, key: cfg.apiKey, model, prompt });
+  }
+
+  // ===================================================================
+  // 🎁 Demo mode — 限时免费内测
+  // 每个浏览器每天 20 次软限流（localStorage 计数，可被绕开但拦住普通滥用）
+  // 服务端用 Vercel env DEEPSEEK_DEMO_KEY 调用 DeepSeek，key 不出现在前端
+  // ===================================================================
+  const DEMO_DAILY_LIMIT = 20;
+  function getDemoUsage() {
+    const today = new Date().toISOString().slice(0, 10);
+    const key = `det-demo-${today}`;
+    const count = parseInt(localStorage.getItem(key)) || 0;
+    return { today, key, count, remaining: Math.max(0, DEMO_DAILY_LIMIT - count) };
+  }
+  async function callDemo(prompt) {
+    const u = getDemoUsage();
+    if (u.count >= DEMO_DAILY_LIMIT) {
+      throw new Error(`今日免费额度已用完（${DEMO_DAILY_LIMIT} 次/天）。在 ⚙️ 设置里换成自己的 DeepSeek API Key 即可无限用（5 元够批 1000+ 次）。`);
+    }
+    localStorage.setItem(u.key, String(u.count + 1));
+    updateProviderBadge();
+    const r = await fetch('/api/llm-proxy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        demo: true,
+        body: JSON.stringify({
+          model: 'deepseek-chat',
+          messages: [{ role: 'user', content: prompt }],
+          stream: false,
+          max_tokens: 8000,
+          temperature: 0.7,
+        }),
+      }),
+    });
+    if (!r.ok) {
+      // 失败的话退还本次额度
+      localStorage.setItem(u.key, String(u.count));
+      const t = await r.text().catch(() => '');
+      throw new Error(`API ${r.status}: ${t.slice(0, 300)}`);
+    }
+    const j = await r.json();
+    const content = j?.choices?.[0]?.message?.content;
+    if (!content) {
+      localStorage.setItem(u.key, String(u.count));
+      throw new Error('API 返回为空：' + JSON.stringify(j).slice(0, 200));
+    }
+    return content;
   }
 
   // 通过 /api/llm-proxy 转发，绕开浏览器 CORS 限制（DeepSeek/Kimi/Qwen 等不允许跨域）
@@ -1385,7 +1449,11 @@ ${rewrittenAnswer}
         </select>
       </div>
 
-      <div id="byok-key-wrap" style="display: ${isLocalProvider ? 'none' : 'block'}; margin-bottom: 8px;">
+      <div id="byok-demo-note" style="display: ${cfg.provider === 'demo' ? 'block' : 'none'}; margin-bottom: 12px; padding: 10px 12px; background: var(--accent-soft, #fbe7d6); border: 1px dashed var(--accent, #d96b2b); border-radius: 6px; font-size: 11.5px; line-height: 1.7; color: var(--accent-ink, #8b3d10);">
+        <!-- populated by applyPreset -->
+      </div>
+
+      <div id="byok-key-wrap" style="display: ${isLocalProvider || cfg.provider === 'demo' ? 'none' : 'block'}; margin-bottom: 8px;">
         <label style="${labelStyle}">API Key</label>
         <div style="display: flex; gap: 6px;">
           <input type="password" id="byok-key" value="${(cfg.apiKey || '').replace(/"/g, '&quot;')}"
@@ -1398,7 +1466,7 @@ ${rewrittenAnswer}
         </div>
       </div>
 
-      <details id="byok-advanced-wrap" style="margin-bottom: 14px; ${isLocalProvider ? 'display: none;' : ''}">
+      <details id="byok-advanced-wrap" style="margin-bottom: 14px; ${isLocalProvider || cfg.provider === 'demo' ? 'display: none;' : ''}">
         <summary style="cursor: pointer; font-size: 11px; color: var(--ink-3, #8a8378); padding: 6px 0; user-select: none;">高级设置（自定义 endpoint / model）</summary>
         <div style="margin-top: 8px;">
           <label style="${labelStyle}">API Endpoint URL</label>
@@ -1432,10 +1500,10 @@ ${rewrittenAnswer}
     function applyPreset(provider) {
       const p = PROVIDERS[provider];
       if (!p) return;
-      const isLocal = provider === 'local';
-      $$('byok-key-wrap').style.display = isLocal ? 'none' : 'block';
-      $$('byok-advanced-wrap').style.display = isLocal ? 'none' : 'block';
-      if (!isLocal) {
+      const noKeyNeeded = provider === 'local' || provider === 'demo';
+      $$('byok-key-wrap').style.display = noKeyNeeded ? 'none' : 'block';
+      $$('byok-advanced-wrap').style.display = noKeyNeeded ? 'none' : 'block';
+      if (!noKeyNeeded) {
         $$('byok-apibase').value = p.apiBase || '';
         $$('byok-apibase').placeholder = p.apiBase || 'https://api.example.com/v1/chat/completions';
         $$('byok-key').value = '';
@@ -1450,6 +1518,16 @@ ${rewrittenAnswer}
         $$('byok-docs-link').textContent = `→ 在哪申请 ${p.name} key`;
       } else {
         docsLine.style.display = 'none';
+      }
+      const demoNote = $$('byok-demo-note');
+      if (demoNote) {
+        if (provider === 'demo') {
+          const u = getDemoUsage();
+          demoNote.style.display = 'block';
+          demoNote.innerHTML = `🎁 <b>限时免费内测中</b><br>不需要任何 API Key 即可使用。共享额度，每个浏览器每天 <b>${DEMO_DAILY_LIMIT} 次</b>，今天还剩 <b>${u.remaining}</b> 次。<br>额度用完或想无限用，下面的下拉换成 DeepSeek + 填自己 5 元的 key。`;
+        } else {
+          demoNote.style.display = 'none';
+        }
       }
     }
 
@@ -1485,11 +1563,11 @@ ${rewrittenAnswer}
         }
         return;
       }
-      if (!cfgNew.apiKey) {
+      if (cfgNew.provider !== 'demo' && !cfgNew.apiKey) {
         result.innerHTML = '<span style="color: var(--bad);">✗ 请填 API Key</span>';
         return;
       }
-      if (!cfgNew.apiBase) {
+      if (cfgNew.provider !== 'demo' && !cfgNew.apiBase) {
         result.innerHTML = '<span style="color: var(--bad);">✗ 请填 API Endpoint URL</span>';
         return;
       }
@@ -1513,11 +1591,12 @@ ${rewrittenAnswer}
         result.innerHTML = '<span style="color: var(--bad);">✗ 目标分要高于当前分</span>';
         return;
       }
-      if (cfgNew.provider !== 'local' && !cfgNew.apiKey) {
+      const noKey = cfgNew.provider === 'local' || cfgNew.provider === 'demo';
+      if (!noKey && !cfgNew.apiKey) {
         result.innerHTML = '<span style="color: var(--bad);">✗ 请填 API Key</span>';
         return;
       }
-      if (cfgNew.provider !== 'local' && !cfgNew.apiBase) {
+      if (!noKey && !cfgNew.apiBase) {
         result.innerHTML = '<span style="color: var(--bad);">✗ 请填 API Endpoint URL</span>';
         return;
       }
@@ -1534,6 +1613,12 @@ ${rewrittenAnswer}
     if (_hostedMode && cfg.provider === 'local') {
       badge.textContent = '未配置 ↗';
       badge.title = '点击配置 AI provider';
+      return;
+    }
+    if (cfg.provider === 'demo') {
+      const u = getDemoUsage();
+      badge.textContent = `🎁 免费 · ${u.remaining}/${DEMO_DAILY_LIMIT}`;
+      badge.title = `限时免费内测 · 今天还剩 ${u.remaining} 次`;
       return;
     }
     const p = PROVIDERS[cfg.provider];
@@ -1561,6 +1646,12 @@ ${rewrittenAnswer}
 
   function showHostedWelcome() {
     if (localStorage.getItem('det-byok-welcomed')) return;
+    // hosted 新用户：自动切到 demo 模式 + 保存
+    const cfg = getCfg();
+    if (_hostedMode && cfg.provider === 'local') {
+      saveCfg({ ...cfg, provider: 'demo' });
+      updateProviderBadge();
+    }
     openSettings();
     setTimeout(() => {
       const modal = document.querySelector('#byok-modal-backdrop > div');
@@ -1568,11 +1659,11 @@ ${rewrittenAnswer}
       const banner = document.createElement('div');
       banner.id = 'byok-hosted-banner';
       banner.style.cssText = 'background: var(--accent-soft, #fbe7d6); border: 1.5px solid var(--accent, #d96b2b); border-radius: 8px; padding: 12px 14px; margin-bottom: 16px; font-size: 12px; line-height: 1.7; color: var(--accent-ink, #8b3d10);';
-      banner.innerHTML = '👋 <b>欢迎使用 DET-scriba</b><br>填一下你的水平 + 选个 AI 服务粘 API Key 就能开始。国内首选 <b>DeepSeek</b>（5 块够批 1000+ 次）。';
+      banner.innerHTML = '👋 <b>欢迎使用 DET-scriba 限时免费内测</b><br>填一下当前分和目标分就能直接开始批改，<b>不用任何 API Key</b>。共享额度每天 20 次/浏览器。';
       modal.insertBefore(banner, modal.children[1]);
       const presetSel = document.getElementById('byok-preset');
       if (presetSel) {
-        presetSel.value = 'deepseek';
+        presetSel.value = 'demo';
         presetSel.dispatchEvent(new Event('change'));
       }
       localStorage.setItem('det-byok-welcomed', '1');

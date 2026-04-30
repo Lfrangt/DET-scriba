@@ -703,7 +703,26 @@ const server = http.createServer((req, res) => {
     req.on('data', chunk => body += chunk);
     req.on('end', async () => {
       try {
-        const { url, headers = {}, body: payload = '' } = JSON.parse(body || '{}');
+        const parsedReq = JSON.parse(body || '{}');
+        // 🎁 Demo 模式（本地也支持，方便开发测试）
+        if (parsedReq.demo === true) {
+          const demoKey = process.env.DEEPSEEK_DEMO_KEY;
+          if (!demoKey) {
+            res.writeHead(503, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Demo 模式未配置（DEEPSEEK_DEMO_KEY 缺失）' }));
+            return;
+          }
+          const upstream = await fetch('https://api.deepseek.com/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + demoKey },
+            body: typeof parsedReq.body === 'string' ? parsedReq.body : JSON.stringify(parsedReq.body),
+          });
+          const text = await upstream.text();
+          res.writeHead(upstream.status, { 'Content-Type': upstream.headers.get('Content-Type') || 'application/json' });
+          res.end(text);
+          return;
+        }
+        const { url, headers = {}, body: payload = '' } = parsedReq;
         if (!url) {
           res.writeHead(400, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ error: 'Missing url' })); return;

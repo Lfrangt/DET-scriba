@@ -33,6 +33,34 @@ export default async function handler(req, res) {
     return;
   }
 
+  // 🎁 Demo 模式：用 Vercel env DEEPSEEK_DEMO_KEY 调 DeepSeek
+  // key 不出现在客户端，浏览器只发 {demo: true, body: <聊天体>}
+  if (payload.demo === true) {
+    const demoKey = process.env.DEEPSEEK_DEMO_KEY;
+    if (!demoKey) {
+      res.status(503).json({ error: 'Demo 模式未配置（DEEPSEEK_DEMO_KEY 缺失）' });
+      return;
+    }
+    try {
+      const upstream = await fetch('https://api.deepseek.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + demoKey,
+        },
+        body: typeof payload.body === 'string' ? payload.body : JSON.stringify(payload.body),
+      });
+      const text = await upstream.text();
+      res.status(upstream.status);
+      res.setHeader('Content-Type', upstream.headers.get('Content-Type') || 'application/json');
+      res.send(text);
+    } catch (e) {
+      res.status(502).json({ error: 'Demo upstream failed: ' + e.message });
+    }
+    return;
+  }
+
+  // BYOK 模式：透传到用户指定的 LLM API
   const { url, headers = {}, body = '' } = payload;
   if (!url || typeof url !== 'string') {
     res.status(400).json({ error: 'Missing url' });
