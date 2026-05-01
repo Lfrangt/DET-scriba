@@ -1570,6 +1570,13 @@ ${rewrittenAnswer}
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
+      if (!r.ok) {
+        const text = await r.text().catch(() => '');
+        if (r.status === 404) {
+          throw new Error('本地 server 没有 /api/generate-example 端点。重启 node server.js 加载最新代码。');
+        }
+        throw new Error(`/api/generate-example ${r.status}: ${text.slice(0, 120)}`);
+      }
       const j = await r.json();
       if (j.error) throw new Error(j.error);
       return parseExampleResponse(j.response);
