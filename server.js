@@ -940,6 +940,74 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  if (req.method === 'POST' && req.url === '/api/generate-example') {
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', () => {
+      let payload = {};
+      try { payload = JSON.parse(body || '{}'); } catch {}
+      const { mode = 'interview', targetLevel = 105 } = payload;
+      const levelGuides = {
+        95:  '大量语法错（拼写/单复数/时态）+ 口语化用词 + 基础 A2/B1 词汇 + 句子简单短散',
+        105: '少量语法错（2-4 处）+ 部分 B2 词汇 + 1-2 个简单复合句 + 表达基本清楚',
+        115: '清晰论点 + 1 个命名例子 + 至少 1 个 B2+ 转折词 + 让步段（可选）+ 0-2 处小错',
+        125: '精炼论证 + 命名例子 + 数据 + 复合句多变 + 0 错 + 让步反驳 + C1 词汇',
+        135: '高水平论证 + 多重例证 + 倒装/被动等高级句式 + C1+ 词汇 + 严格 0 错',
+        145: '接近母语 + 修辞张力 + 论证层次清晰 + C2 词汇精准 + 0 错',
+      };
+      const closest = Object.keys(levelGuides).map(Number)
+        .reduce((p, c) => Math.abs(c - targetLevel) < Math.abs(p - targetLevel) ? c : p, 95);
+      const guide = levelGuides[closest];
+      const modeDesc = {
+        interview: 'DET Writing Sample（写作面试）— 5 分钟限时单题作文',
+        interactive: 'DET Interactive Writing（互动写作）— Part 1 (5min) 开放题 + Part 2 (3min) 跟进题',
+        academic: '通用学术写作 essay — 不限字数 / 不限模板',
+      };
+      const interactiveExtra = mode === 'interactive'
+        ? '\n互动模式额外输出 <prompt2> 和 <answer2>（Part 2 必须呼应 Part 1 内容）'
+        : '';
+
+      const examplePrompt = `你是英语写作示例生成器，专门给 AI 精批系统生成测试样本。
+
+# 任务
+生成一个【${modeDesc[mode] || modeDesc.interview}】的示例。
+
+# 关键要求
+- **目标水平：${targetLevel} 分**（DET 0-160 制对应水平）
+- 答案写作质量必须**真实匹配**这个水平：${guide}
+- 题目要自然、贴近真实考试 / 作业风格
+- 答案长度按目标水平合理：分越低写得越短/糙，分越高写得越精炼
+
+# 输出格式（严格按 XML 标签）
+
+<prompt>题目内容</prompt>
+<answer>学生答案内容</answer>${interactiveExtra}
+
+不要任何前言、解释、注释，只输出标签内容。`;
+
+      console.log(`[${new Date().toISOString()}] 生成示例 mode=${mode} 目标=${targetLevel} (${CLI.label})`);
+      const llm = spawnLLM(examplePrompt);
+      llm.proc.on('close', code => {
+        if (code === 0) {
+          const output = llm.getOutput();
+          llm.cleanup();
+          res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+          res.end(JSON.stringify({ response: output }));
+        } else {
+          llm.cleanup();
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: llm.stderr || `${CLI.label} exit ${code}` }));
+        }
+      });
+      llm.proc.on('error', err => {
+        llm.cleanup();
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: `无法启动 ${CLI.binary}: ${err.message}` }));
+      });
+    });
+    return;
+  }
+
   if (req.method === 'POST' && req.url === '/api/generate-model') {
     let body = '';
     req.on('data', chunk => body += chunk);

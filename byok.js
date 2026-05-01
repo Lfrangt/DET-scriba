@@ -1508,6 +1508,77 @@ ${rewrittenAnswer}
     return await callLLM(fullPrompt);
   }
 
+  function buildExamplePrompt({ mode, targetLevel }) {
+    const levelGuides = {
+      95:  '大量语法错（拼写/单复数/时态）+ 口语化用词 + 基础 A2/B1 词汇 + 句子简单短散',
+      105: '少量语法错（2-4 处）+ 部分 B2 词汇 + 1-2 个简单复合句 + 表达基本清楚',
+      115: '清晰论点 + 1 个命名例子 + 至少 1 个 B2+ 转折词 + 让步段（可选）+ 0-2 处小错',
+      125: '精炼论证 + 命名例子 + 数据 + 复合句多变 + 0 错 + 让步反驳 + C1 词汇',
+      135: '高水平论证 + 多重例证 + 倒装/被动等高级句式 + C1+ 词汇 + 严格 0 错',
+      145: '接近母语 + 修辞张力 + 论证层次清晰 + C2 词汇精准 + 0 错',
+    };
+    const closest = Object.keys(levelGuides).map(Number)
+      .reduce((p, c) => Math.abs(c - targetLevel) < Math.abs(p - targetLevel) ? c : p, 95);
+    const guide = levelGuides[closest];
+
+    const modeDesc = {
+      interview: 'DET Writing Sample（写作面试）— 5 分钟限时单题作文',
+      interactive: 'DET Interactive Writing（互动写作）— Part 1 (5min) 开放题 + Part 2 (3min) 跟进题',
+      academic: '通用学术写作 essay — 不限字数 / 不限模板',
+    };
+
+    const interactiveExtra = mode === 'interactive'
+      ? '\n互动模式额外输出 <prompt2> 和 <answer2>（Part 2 必须呼应 Part 1 内容）'
+      : '';
+
+    return `你是英语写作示例生成器，专门给 AI 精批系统生成测试样本。
+
+# 任务
+生成一个【${modeDesc[mode] || modeDesc.interview}】的示例，用于让用户点击精批后看 AI 给的反馈。
+
+# 关键要求
+- **目标水平：${targetLevel} 分**（DET 0-160 制对应水平）
+- 答案写作质量必须**真实匹配**这个水平：${guide}
+- 题目要自然、贴近真实考试 / 作业风格
+- 答案长度按目标水平合理：分越低写得越短/糙，分越高写得越精炼
+
+# 输出格式（严格按 XML 标签，不要 markdown 包裹）
+
+<prompt>题目内容</prompt>
+<answer>学生答案内容</answer>${interactiveExtra}
+
+不要任何前言、解释、注释，只输出标签内容。`;
+  }
+
+  function parseExampleResponse(text) {
+    const get = tag => {
+      const m = text.match(new RegExp(`<${tag}>([\\s\\S]*?)</${tag}>`, 'i'));
+      return m ? m[1].trim() : '';
+    };
+    return {
+      prompt: get('prompt'),
+      answer: get('answer'),
+      prompt2: get('prompt2'),
+      answer2: get('answer2'),
+    };
+  }
+
+  async function generateExample(payload) {
+    if (isLocal() && !_hostedMode) {
+      const r = await fetch('/api/generate-example', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const j = await r.json();
+      if (j.error) throw new Error(j.error);
+      return parseExampleResponse(j.response);
+    }
+    const fullPrompt = buildExamplePrompt(payload);
+    const out = await callLLM(fullPrompt);
+    return parseExampleResponse(out);
+  }
+
   async function askTeacher(payload) {
     if (isLocal() && !_hostedMode) {
       const r = await fetch('/api/ask-teacher', {
@@ -1833,7 +1904,7 @@ ${rewrittenAnswer}
   // expose
   window.BYOK = {
     PROVIDERS, getCfg, saveCfg, openSettings, isLocal,
-    reviewEssay, generatePrompt, generateModelEssay, askTeacher, correctEssay,
+    reviewEssay, generatePrompt, generateModelEssay, generateExample, askTeacher, correctEssay,
     fetchResource, fetchResourceList,
     updateProviderBadge,
   };

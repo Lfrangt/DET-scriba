@@ -1668,14 +1668,13 @@
       return map[closest];
     }
 
-    $('example').onclick = () => {
-      const level = parseInt($('model-level')?.value) || 105;
+    // 本地 fallback 示例（API 失败时用）
+    function fillLocalFallback(level) {
       if (currentMode === 'interactive') {
-        // 互动模式只有一个示例（115 水平）
         $('prompt').value = "Tell us about a memorable trip you took recently. What made it special?";
-        $('answer').value = "Last summer I went to Tokyo with my family. It was special because we walked through Shinjuku at night, and the neon signs reflected on wet streets after rain — I had never seen anything like it. We also tried tonkotsu ramen at a small shop where the chef explained the broth takes 12 hours to make. That moment showed me how craftsmanship can be quiet but powerful.";
+        $('answer').value = "Last summer I went to Tokyo with my family. It was special because we walked through Shinjuku at night, and the neon signs reflected on wet streets after rain — I had never seen anything like it.";
         $('prompt2').value = "What did you learn from this trip that changed how you see things?";
-        $('answer2').value = "It taught me that depth often hides in details. Before, I valued big achievements. Now I notice small acts of dedication — like that ramen chef — and find them more inspiring than headlines.";
+        $('answer2').value = "It taught me that depth often hides in details.";
       } else if (currentMode === 'academic') {
         const ex = pickByLevel(ACADEMIC_EXAMPLES, level);
         $('prompt').value = ex.prompt;
@@ -1685,8 +1684,34 @@
         $('prompt').value = ex.prompt;
         $('answer').value = ex.answer;
       }
-      updateWordCount();
-      updateWordCount2();
+    }
+
+    $('example').onclick = async () => {
+      const btn = $('example');
+      const level = parseInt($('model-level')?.value) || 105;
+      const orig = btn.textContent;
+      btn.disabled = true;
+      btn.innerHTML = '<span class="loading-dots">生成中</span>';
+      try {
+        const ex = await BYOK.generateExample({ mode: currentMode, targetLevel: level });
+        if (!ex.prompt && !ex.answer) throw new Error('AI 没返回有效示例');
+        $('prompt').value = ex.prompt || '';
+        $('answer').value = ex.answer || '';
+        if (currentMode === 'interactive') {
+          $('prompt2').value = ex.prompt2 || '';
+          $('answer2').value = ex.answer2 || '';
+        }
+      } catch (e) {
+        console.warn('AI 生成示例失败，回退到本地:', e.message);
+        fillLocalFallback(level);
+        $('practice-status').textContent = `⚠️ AI 生成失败（${e.message.slice(0, 60)}），用了本地示例`;
+        setTimeout(() => { $('practice-status').textContent = ''; }, 4000);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = orig;
+        updateWordCount();
+        updateWordCount2();
+      }
     };
 
     // ============= Resources =============
