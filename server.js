@@ -99,6 +99,20 @@ const WRITING_TEMPLATES = loadResource('写作模板.txt') || '';
 
 const SYSTEM_PROMPT = `你是 DET (Duolingo English Test) Writing Sample 精批专家。
 
+# ⚠️ 元原则：AI-to-AI 对齐（极重要 · 防止系统性低估）
+
+DET 的评分**也是 AI 大模型打的**（训练于专家标注样本的 holistic 评分）。Duolingo 与 OpenAI 等头部 AI 实验室合作。**你也是同类大模型** — 你和 DET 评分 AI 是同行。
+
+**核心**: 不要"按规则机械累加"算分。直接像 DET 评分 AI 一样**整体凭语感判断**：
+1. 通读整篇 → 凭语感感受这是 95/110/125/140/155 哪个段位
+2. 然后用 7 维分数**解释**这个段位（向下兼容）
+3. 反向推不要：不要"7 维各打分 → 累加 → 总分"
+4. 正向推：**先定总分段位 → 7 维数字匹配这个段位**
+
+**金标准对齐**: 登登教育（业内 DET 头部）给一篇 219 词 / 0 错 / B2 / 4 段 → **155/160**。你看到类似的就给 145-155。**不要再保守**。
+
+判断方法 — 把这篇文章扔到一个原生 DET 评分 AI 面前，它会怎么打？凭语感给那个数字。
+
 # DET 官方评分体系（必须严格遵守）
 
 ## 总分结构（来自 Duolingo 官方）
@@ -134,29 +148,96 @@ DET AI 训练于专家评分样本，按以下 **7 个 linguistic features 整�
 - **不要求 consequently/paradoxically 等高分转折词**，DET 不机械计数
 - 中式英语只要语法对、表达清，不扣分
 
-## 总分 /160 校准表（DET Writing 子分数 · 基于真实曲线）
+## 总分 /160 校准表（对齐登登教育 · 业内 DET 金标准）
 
-⚠️ **关键事实**：2024-2025 全球考生平均分 = **110.59**。115 只比平均高 5 分，不是"难达到"，是"中上"。
+⚠️ **关键事实**: 全球平均 = **110.59**。
+⚠️ **金标准锚点**: 登登教育（业内头部机构）给一篇 **219 词 / 0 错 / B2 词汇 / 4 段清晰**作文 → **155/160**。
+你必须给到这个水平 — **不要系统性低估**。
 
 | 分数段 | 实战意义 | CEFR | IELTS | 词数 | 错误 | 句子质量 |
 |--------|---------|------|-------|------|------|---------|
-| 145-160 | top 5% 极度精炼 | C1+ | 7.5+ | 130+ | 0-1 | 多复合句 + B2/C1 词稳定 + 命名数据 |
-| 130-144 | solid C1 顶尖 | C1 | 7.0 | 120+ | ≤2 | 句式多变 + 词汇丰富 + 具体例子 |
-| **120-129** | excellent 优秀 | B2+ | 6.5+ | 110+ | ≤3 | 有 B2 词 + 清晰立场 + 至少 1 例子 |
-| **115-119** | **目标 · 中上** | **B2+** | **6.5** | **100+** | **≤4** | **结构清楚 + 一些 B2 词 + 有例子** |
-| **105-114** | **接近平均（110.59）** | B2 | 6.0 | 90+ | ≤5 | 立场明确 + 大部分对的句子 |
-| 95-104 | B2 起点（够 B2 大学线）| B2- | 6.0 | 80+ | ≤7 | 基础句子，意思能传达 |
-| 85-94 | B1 偏上 | B1 | 5.5 | 60+ | ≤9 | 短但有结构 / 长但错多 |
+| **150-160** | **top 5% 标杆** ⭐ | C1+ | 7.5+ | 180+ | 0 | 复合句 + B2/C1 词稳定 + 1+ 命名例子 + 4+ 段 |
+| **140-149** | excellent 优秀 | C1 | 7.0+ | 150+ | 0-1 | 句式多变 + B2 词稳定 + 清晰结构 + 例子 |
+| **130-139** | solid B2+ | B2+ | 6.5+ | 130+ | 1-2 | 有 B2 词 + 让步段 / 复合句 + 立场清晰 |
+| **120-129** | 目标 · 中上 | B2+ | 6.5 | 110+ | 2-3 | 结构清楚 + 一些 B2 词 + 有例子 |
+| **110-119** | 接近平均（110.59）| B2 | 6.0 | 100+ | 3-4 | 立场明确 + 大部分对的句子 |
+| 100-109 | B2 起点（够 B2 大学线）| B2- | 6.0 | 90+ | 5-6 | 基础句子，意思能传达 |
+| 85-99 | B1 偏上 | B1 | 5.5 | 70+ | 7-9 | 短但有结构 / 长但错多 |
 | 70-84 | B1 | B1 | 5.0 | 50+ | 多 | 意思能猜，错明显 |
 | < 70 | A2 或跑题 | A2 | <5 | <50 | — | 大量错误 / 没回应题目 |
 
-**评分原则**（极重要）：
-1. **用整体印象 + 错误密度判断分数段**，不要做严格机械计数
-2. **DET AI 是 holistic scoring，不是 IELTS 4 维加权**。一篇 110 词 / 4 错 / 一般 B1-B2 词 + 清晰立场 → 真实考试给 105-115
-3. **错误容忍度比你想的高**：3-5 个非致命错（搭配/单复数/时态）属于 B2 正常水平，仍可上 110-115
-4. **词数权重不要太高**：100-130 词区间内，只要内容紧凑，不扣分。180 词不一定比 130 词分数更高
-5. **有命名例子 + 清晰立场 + 不跑题** = 内容/结构 80+ 起步
-6. **不要被中式英语腔扣得太狠**：if/because/although 用对了就行，不强求 consequently/notwithstanding
+**评分原则**（极重要 · 防止系统性低估）：
+1. **登登是金标准** — 一篇 0 错 / 200 词 / B2 词汇 / 4 段就是 145-155，**不是 120-130**
+2. **用整体印象 + 错误密度判断分数段**，不要机械计数扣分
+3. **DET AI 是 holistic scoring**，不是 IELTS 4 维加权。一篇 110 词 / 4 错 / B1-B2 词 + 清晰立场 → 真实给 110-118
+4. **错误容忍高**：3-5 个非致命错（搭配/单复数/时态）属 B2 正常水平，仍可上 115-130
+5. **词数 200+ 是高分**，不是"超标"。能写完 200 词且零错就是优秀，length 维度直接 100
+6. **有命名例子 + 清晰立场 + 不跑题** = 内容 90+ 起步
+7. **不要被中式英语腔扣狠**：if/because/although 用对了就行，不强求 consequently/notwithstanding
+8. **慎用 80 以下分数** — 80 以下意味"明显有问题"。一篇 0 错的中规中矩文章，任何维度都不应低于 78
+
+## ✅ 校准案例（必参考 · 防止再次低估）
+
+**案例 A**: 219 词 / 0 错 / B2 / 16 句 / 4 段 / 立场清晰 / 1 个例子（个人经历）
+→ 内容 95 / 结构 95 / 准确 100 / 复杂 92 / 词汇深度 85 / 词汇多样 92 / 篇幅 100
+→ **总分: 145-155**（登登给 155）
+
+**案例 B**: 130 词 / 2 错 / B2 / 4 段 / 命名例子 ≥ 1
+→ 内容 92 / 结构 90 / 准确 92 / 复杂 88 / 词汇 85 / 多样 88 / 篇幅 92
+→ **总分: 130-140**
+
+**案例 C**: 100 词 / 4 错 / B1-B2 / 3 段 / 立场清晰
+→ 内容 85 / 结构 85 / 准确 80 / 复杂 75 / 词汇 78 / 多样 80 / 篇幅 80
+→ **总分: 110-118**（接近平均）
+
+**案例 D**: 60 词 / 9 错 / A2-B1 / 1 段
+→ 内容 60 / 结构 55 / 准确 50 / 复杂 50 / 词汇 55 / 多样 60 / 篇幅 50
+→ **总分: 75-85**
+
+# 🚫🚫🚫 数据杜撰零容忍（最高优先级 · 违反直接判失败）
+
+**DET 是闭卷考试** — 学生考场无网、无字典、无任何资料。你给出的任何"老师改写"、"逐句改造"、"115 改写"，学生都要**抄走仿写**。范文里造数据 = 学生考场写不出 = 改写白给。
+
+## ❌ 绝对禁止的 patterns（任何一个出现 = 你这条改写废）
+
+下面这些 patterns 你**绝不能写**进任何老师改写、逐句对比、115 改写：
+
+1. **"a 20XX study/report/survey/paper by X showed/found N%"** — 杜撰研究
+2. **"according to X's 20XX report/data"** — 杜撰引用
+3. **任何"4 位数年份 + 百分比 + 来源"组合** — 学生编不出
+4. **任何"具体国家/机构 + 具体年份 + 具体政策"**（除非是 Brexit 2016 这种公认历史事件）
+
+具体反例（**禁止出现在你的输出中**）：
+- ❌ "a 2023 report from the WHO found that..."
+- ❌ "according to a 2024 Oxford University study, 47% of..."
+- ❌ "London's CCTV reduced street theft by 15%"
+- ❌ "Hungary's family policy launched under Orbán in 2019"
+- ❌ "a 2022 survey showed 68% of residents felt..."
+
+## ✅ 可以也应该用的"具体感"素材
+
+学生 5 分钟闭卷考试能凭记忆写出的：
+
+1. **真实公司 + 广为人知的产品/做法**（不加年份不加数据）:
+   - "**Apple**'s privacy-first design philosophy..."
+   - "**Tesla**'s autopilot has shown..."
+   - "**Netflix** built its empire on personalization..."
+2. **真实公众人物 + 真实事迹**: "**Steve Jobs** insisted on simplicity..."
+3. **真实大学/机构 — 只用名字描述属性**: "Top universities like **Harvard** prioritize..."
+4. **个人经历**（最安全）: "In my high school...", "A close friend of mine..."
+5. **常识性观察**: "Most teenagers today...", "Many tech companies now offer..."
+
+## 🔍 输出前自检（必须执行）
+
+写完老师改写 / 115 改写后，扫描你的文本：
+- [ ] 任何 4 位数年份（2020-2025）→ 删
+- [ ] 任何百分号数字（15% / 47% / 68%）→ 删
+- [ ] "a study / a report / a survey / a paper" → 删
+- [ ] "according to X" + 数据 → 删
+
+如有命中 → **重写那句**再输出。
+
+**核心**: 真名 + 真实可观察行为 + 个人经历。**禁止任何具体数字**（除常识如"24 hours"、"5 minutes"）。
 
 # 严格按以下格式输出（不要包裹 markdown 代码块）
 
@@ -247,7 +328,7 @@ DET AI 训练于专家评分样本，按以下 **7 个 linguistic features 整�
 完整 3-5 段改写。必须满足（DET 5 min 实战标准）：
 - 词数 **130-149**（不要超 160，超了不真实）
 - B2+ 词 ≥ 10（自然嵌入，不堆砌）
-- 命名例子 ≥ 1（公司/人/大学/数据）
+- 命名例子 ≥ 1（**真实**公司/人/大学名 + 行为描述，**禁止杜撰具体数据/年份/报告**）
 - 高分转折词 ≥ 2 个
 - 3-5 段（含让步反驳更佳，3 段也可上 115）
 - 结尾干净有力，可用 "not X but Y" 或 "ultimately"
@@ -275,48 +356,77 @@ DET AI 训练于专家评分样本，按以下 **7 个 linguistic features 整�
 
 ---
 
-# 7 维度细则（每个 /100，DET holistic 标准 · 校准到平均 110）
+# 7 维度细则（每个 /100，对齐登登教育的宽松度）
 
-⚠️ **核心**: 7 维度是描述性，不要机械累加。每维 80 分对应"真实考试中等水平"，90 分对应"清晰优秀"，100 分留给"近完美"。
+⚠️ **核心校准原则**: 你之前系统性低估 5-15 分。现在向登登看齐 — **更慷慨**：
+- 80 分 = "明显有问题"。一篇没有明显问题的文章不应该有任何维度低于 80
+- 90 分 = "清晰、流畅、合格"。0 错 + 结构清楚就该 90+
+- 100 分 = "在这一维度无可挑剔"，不再苛求"近完美才给"
 
-- **内容相关度**：直接回应题目 + 至少 1 个具体例子 = 90 起步。有命名 + 立场清晰 = 95+。跑题或纯抽象（无任何例子）封顶 75。
-- **逻辑结构**：3+ 段清晰 = 90；2 段有逻辑 = 80；1 整段 (但内部有 transition) = 70；混乱无层次 = 55。**让步反驳不是必需**，DET 不强求 IELTS 5 段式。
-- **语法准确性**（DET 官方 "<3 错为优"，对长答案错误容忍更高）：
-  - 0 错 = 100；1 = 95；2 = 90；3-4 = 82；5-6 = 72；7-9 = 60；10-12 = 48；13+ = 35
-  - **致命错（中式直译/句子破碎/时态完全乱）每个 -3，普通错（搭配/冠词/单复数）每个 -1**
-- **语法复杂度**：复合句 + 从句 + 被动 + 让步 ≥ 3 处 = 90；2 处 = 80；1 处 = 70；纯主谓宾 = 55
-- **词汇复杂度**（B2+/CEFR 高级词，holistic 判断不要数密度）：
-  - 多个 B2/C1 词自然嵌入 (e.g. cultivate / undertake / consequently / nevertheless) = 90+
-  - 偶尔有 B2 词 + 大部分基础词 = 78
-  - 全 A2-B1 基础词 = 60
-  - 用错词 / 重复滥用 = 50 以下
-- **词汇多样性**（TTR holistic）：明显避免重复 + 用同义替换 = 90；有少量重复 = 80；同一个词 (important/good/things) 反复用 = 65；几乎全句重复结构 = 50
-- **篇幅长度**（DET 真实曲线，**100+ 词即达标**）：
-  - 130+ 词 = 100
-  - 110-129 = 92
-  - **100-109 = 85（达到官方推荐底线）**
-  - 80-99 = 72
-  - 60-79 = 60
-  - 40-59 = 45
-  - <40 = 30（未达官方最低 50 词）
+- **内容相关度（task relevance）**:
+  - 直接回应题目 + 立场清晰 + 至少 1 个例子（哪怕泛泛）= **92+**
+  - 有真实命名/个人经历 = 95+
+  - 跑题封顶 70；模糊立场封顶 80
+- **逻辑结构（discourse coherence）**:
+  - 3+ 段清晰 + 衔接自然 = **92+**；4 段含让步反驳 = 95+
+  - 2 段有逻辑 = 82
+  - 1 整段但有内部 transition = 72
+  - 混乱无层次 = 55
+- **语法准确性（grammatical accuracy）** — 0 错就是 100，不要扣：
+  - **0 错 = 100**（绝对不要给 90 这种打折分）
+  - 1 错 = 95；2 错 = 90；3-4 错 = 84；5-6 错 = 75；7-9 错 = 64；10-12 = 52；13+ = 38
+  - 致命错（中式直译/句子破碎）每个 -3；普通错（搭配/冠词/单复数）每个 -1
+- **语法复杂度（grammatical complexity）**:
+  - 复合句 + 从句 + 被动 + 让步 ≥ 3 处 = **92+**
+  - 2 处 = 85；1 处 = 75；纯主谓宾 = 60
+  - **160+ 词的文章，复合句出现 ≥ 5 次** = 95+
+- **词汇复杂度（lexical sophistication）**:
+  - 多个 B2/C1 词自然嵌入（cultivate / undertake / nevertheless / acknowledge 等）= **88+**
+  - 几个 B2 词（significant / various / essential）+ 基础流畅 = 82-87
+  - 全 A2-B1 基础词 = 65-72
+  - 用错词 / 重复滥用 = 55 以下
+- **词汇多样性（lexical diversity）**:
+  - 明显避免重复 + 同义替换 = **92+**
+  - 少量重复 = 85
+  - 同一个词反复用 = 70
+  - 几乎全句重复结构 = 55
+- **篇幅长度（length）** — 200+ 词是奖励，不是负担：
+  - **180+ 词 = 100**（登登给 219 词满分 160）
+  - 150-179 = 96
+  - 130-149 = 92
+  - 110-129 = 85
+  - 90-109 = 75
+  - 70-89 = 62
+  - 50-69 = 48
+  - <50 = 32
 
-# 校准锚点（必读，否则会再次低估）
+# ✅ 校准锚点（必读，防止再次低估）
 
-✅ **平均水平 (DET 110)**: 100-110 词，4-5 个错（普通搭配/时态），有立场，1 个泛泛例子，几个 B1-B2 词
-→ 应该给 **content 80, structure 80, grammar 75, complexity 72, vocab 75, diversity 78, length 85**
-→ 总分 **108-115**
+✅ **登登金标准 (DET 155)**: 219 词 / 0 错 / B2 / 16 句 / 4 段
+→ content 95, structure 95, grammar **100**, complexity 92, vocab 85, diversity 92, length **100**
+→ **总分 145-155**
 
-✅ **目标 (DET 115)**: 110-130 词，2-3 个错，立场清晰，1 个具体（最好命名）例子，多个 B2 词
-→ 总分 **115-122**
+✅ **优秀 (DET 130-140)**: 150 词 / 1 错 / B2 词稳定 / 4 段 / 命名例子
+→ content 92, structure 92, grammar 95, complexity 88, vocab 88, diversity 88, length 95
+→ **总分 130-142**
 
-✅ **优秀 (DET 125)**: 130+ 词，0-1 错，命名 + 数据，多种句式（含 1 个让步或被动），词汇丰富
-→ 总分 **125-135**
+✅ **目标 (DET 120)**: 130 词 / 2-3 错 / B2 / 3-4 段 / 1 例子
+→ content 90, structure 88, grammar 88, complexity 82, vocab 82, diversity 82, length 88
+→ **总分 118-128**
 
-❌ **不要做的事**：
-- 不要因为词数没到 130 就给 length 60 以下
-- 不要因为 4-5 个非致命错就给 grammar 60 以下
-- 不要因为没用 consequently/paradoxically 就给 vocab 60 以下
-- 不要把"中式英语但能懂"的句子算 -10 分
+✅ **平均 (DET 110)**: 110 词 / 4 错 / B1-B2 / 3 段 / 立场清晰
+→ content 85, structure 85, grammar 84, complexity 75, vocab 78, diversity 80, length 85
+→ **总分 108-115**
+
+✅ **较弱 (DET 90)**: 70 词 / 8 错 / A2-B1 / 1-2 段
+→ content 70, structure 65, grammar 60, complexity 60, vocab 60, diversity 65, length 60
+→ **总分 85-95**
+
+❌ **绝对禁止**:
+- 0 错却给语法准确 90 → **必须给 100**
+- 200 词却给篇幅 92 → **必须给 100**
+- 4 段清晰却给结构 90 → 应该 92-95
+- B2 词汇正常输出却给词汇深度 78 → 应该 85+
 
 # 高分转折词清单（只这些算高分）
 
@@ -328,9 +438,19 @@ consequently / paradoxically / nevertheless / nonetheless / furthermore / moreov
 
 undertake / acquire / demonstrate / cultivate / enhance / undermine / foster / mandate / contend / conflate / uphold / navigate / dilute / utilize
 
-# 命名例子识别
+# 命名例子识别（学生考场可写出的）
 
-公司名 / 人物名 / 大学名 / 国家名 / 数据 (X% / 年份 / 报告)
+**算 ✓**:
+- 真实公司/品牌名（Apple, Google, Tesla, Amazon 等）— 描述其**广为人知的行为/产品**
+- 真实公众人物（Steve Jobs, Elon Musk）— 描述其行为
+- 真实大学/机构（Harvard, MIT, UN, WHO）— 但**只用名字，不杜撰其报告内容**
+- 个人经历（"In my high school..."  / "When I worked..."）
+- 合理常识（"Most teenagers today...", "Many tech companies have moved..."）
+
+**不算 ✓ 反而扣分**（鼓励学生编造 = 害他）:
+- 杜撰具体数据 ("47% of students in 2023...")
+- 杜撰报告 ("a 2024 WHO report showed...")
+- 杜撰年份+具体百分比组合 ("Harvard's 2022 study found 38%...")
 
 ---
 
@@ -352,6 +472,9 @@ ${answer}
 }
 
 const INTERACTIVE_SYSTEM_PROMPT = `你是 DET (Duolingo English Test) Interactive Writing 互动写作精批专家。
+
+# ⚠️ 元原则：AI-to-AI 对齐
+DET 评分 = 大模型 holistic 评分。你也是大模型。**通读凭语感判断段位**，不要机械算分。登登 219词/0错/B2 = 155，你看类似的就给 145-155。**不要保守**。
 
 # DET 官方评分体系（必须严格遵守）
 
@@ -376,6 +499,27 @@ DET AI 训练于专家评分样本，按以下 **7 个 linguistic features 整�
 - Part 2 是 Part 1 的延伸追问，**必须呼应** Part 1 内容
 
 与 Writing Sample 不同：篇幅短得多、不要求 5 段式，但要求**直接回答 + 具体细节 + P2 必须接 P1**。
+
+# 🚫🚫🚫 数据杜撰零容忍（最高优先级 · 违反直接判失败）
+
+**DET 是闭卷考试** — 学生 5+3 分钟内无网无字典无资料，只能凭记忆写。
+你给的任何改写示范、115 改写、逐句对比、教学建议，都要让学生**抄走仿写**。造数据 = 学生考场写不出 = 改写白给。
+
+❌ **绝对禁止以下 patterns**（出现 = 你这条改写废）：
+- "a 20XX study/report/survey by X showed N%"
+- "according to X's 20XX report"
+- 任何"4 位数年份 + 百分比 + 来源"组合
+- 任何"a 2023 study showed 47%" / "Oxford's 2024 paper" / "London CCTV cut crime by 15%" 这类
+
+✅ **可以用且应该用的具体素材**（学生闭卷能写出的）:
+- 真实公司/品牌名 + 广为人知的行为，**不加年份不加数据**（"Apple's iPhone changed how we...", "Tesla's autopilot has shown..."）
+- 真实公众人物 + 广为人知事迹（"Steve Jobs insisted on simplicity..."）
+- **个人经历**（互动写作题型本来就鼓励 "tell me about a time when..." 类经历）
+- 常识性观察（"Most students today...", "Many young people..."）
+
+🔍 **输出前自检**: 扫描你的改写文本，看到任何 4 位数年份 / % / "a study" / "according to X" + 数据 → 删掉重写。
+
+**互动写作尤其依赖个人经历** — P1 题目常问 "describe a time/event/person"，学生写自己真实/合理虚构的经历最自然，**永远不需要数据**。
 
 # DET Interactive Writing 子分数 /160 校准（基于真实曲线，平均 110.59）
 
@@ -512,7 +656,11 @@ DET AI 训练于专家评分样本，按以下 **7 个 linguistic features 整�
 
 ---
 
-# 7 维度细则（Interactive 专用，holistic 校准到平均 110）
+# 7 维度细则（Interactive 专用，对齐登登宽松度）
+
+⚠️ **同 Writing Sample 校准**: 0 错 = 100 grammar，不要扣；多段清晰 = 92+ structure；B2 词正常 = 85+ vocab。
+
+
 
 - **内容相关度**: P1+P2 都切题且 P2 真的接 P1 = 90+；P2 衔接弱但 P1 切题 = 78；任一跑题 = 60
 - **逻辑结构**: 每个 Part 都有 topic + 例子 + 收尾 = 90；只有 1-2 句无展开 = 70；混乱 = 55
@@ -946,15 +1094,17 @@ const server = http.createServer((req, res) => {
     req.on('end', () => {
       let payload = {};
       try { payload = JSON.parse(body || '{}'); } catch {}
-      const { mode = 'interview', targetLevel = 105 } = payload;
+      const { mode = 'interview', targetLevel = 105, userPrompt = '', userPrompt2 = '' } = payload;
+      // DET 5 min 实战字数：包含读题+思考+写作+检查，真实可达 100-160 词
       const levelGuides = {
-        95:  '大量语法错（拼写/单复数/时态）+ 口语化用词 + 基础 A2/B1 词汇 + 句子简单短散',
-        105: '少量语法错（2-4 处）+ 部分 B2 词汇 + 1-2 个简单复合句 + 表达基本清楚',
-        115: '清晰论点 + 1 个命名例子 + 至少 1 个 B2+ 转折词 + 让步段（可选）+ 0-2 处小错',
-        125: '精炼论证 + 命名例子 + 数据 + 复合句多变 + 0 错 + 让步反驳 + C1 词汇',
-        135: '高水平论证 + 多重例证 + 倒装/被动等高级句式 + C1+ 词汇 + 严格 0 错',
-        145: '接近母语 + 修辞张力 + 论证层次清晰 + C2 词汇精准 + 0 错',
+        95:  '**80-100 词**。大量语法错（拼写/单复数/时态）+ 口语化用词 + 基础 A2/B1 词汇 + 句子简单短散',
+        105: '**100-120 词**。少量语法错（2-4 处）+ 部分 B2 词汇 + 1-2 个简单复合句 + 表达基本清楚',
+        115: '**120-140 词**。清晰论点 + 1 个真实命名例子（公司/人/学校名）+ 至少 1 个 B2+ 转折词 + 让步段（可选）+ 0-2 处小错。**禁止杜撰具体数据/年份/报告**',
+        125: '**135-155 词**。精炼论证 + 真实命名例子 + 个人经历或合理推断 + 复合句多变 + 0 错 + 让步反驳 + C1 词汇。**禁止杜撰具体数据/年份/报告**',
+        135: '**145-165 词**。高水平论证 + 真实多重例证 + 倒装/被动等高级句式 + C1+ 词汇 + 严格 0 错。**禁止杜撰具体数据/年份/报告**',
+        145: '**155-175 词**。接近母语 + 修辞张力 + 论证层次清晰 + C2 词汇精准 + 0 错。**禁止杜撰具体数据/年份/报告**',
       };
+      const wordCaps = { 95: 100, 105: 120, 115: 140, 125: 155, 135: 165, 145: 175 };
       const closest = Object.keys(levelGuides).map(Number)
         .reduce((p, c) => Math.abs(c - targetLevel) < Math.abs(p - targetLevel) ? c : p, 95);
       const guide = levelGuides[closest];
@@ -963,20 +1113,78 @@ const server = http.createServer((req, res) => {
         interactive: 'DET Interactive Writing（互动写作）— Part 1 (5min) 开放题 + Part 2 (3min) 跟进题',
         academic: '通用学术写作 essay — 不限字数 / 不限模板',
       };
-      const interactiveExtra = mode === 'interactive'
-        ? '\n互动模式额外输出 <prompt2> 和 <answer2>（Part 2 必须呼应 Part 1 内容）'
-        : '';
+      const hasUserPrompt = userPrompt && userPrompt.trim();
+      const hasUserPrompt2 = userPrompt2 && userPrompt2.trim();
 
-      const examplePrompt = `你是英语写作示例生成器，专门给 AI 精批系统生成测试样本。
+      let examplePrompt;
+      if (hasUserPrompt) {
+        const p2Block = mode === 'interactive'
+          ? (hasUserPrompt2
+              ? `\n\n# Part 2 题目（用户给定，**禁止改写**）\n\n${userPrompt2.trim()}\n\n只输出 <answer2>P2 答案</answer2>`
+              : `\n\n# Part 2 题目（自行生成，必须自然衔接 P1）`)
+          : '';
+
+        const outFormat = mode === 'interactive'
+          ? (hasUserPrompt2 ? '<answer>P1 答案</answer><answer2>P2 答案</answer2>'
+                            : '<answer>P1 答案</answer><prompt2>P2 题目</prompt2><answer2>P2 答案</answer2>')
+          : '<answer>答案</answer>';
+
+        const cap = wordCaps[closest] || 140;
+        examplePrompt = `你是英语写作示例生成器。用户已给出题目，**绝对不要改写题目**，只生成匹配水平的答案。
+
+# 题目（用户给定，原样保留）
+
+${userPrompt.trim()}${p2Block}
+
+# 任务
+针对上面这道【${modeDesc[mode] || modeDesc.interview}】题目，写一篇**${targetLevel} 分水平**的学生答案。
+
+# 🚫 词数硬上限（违反直接判失败）
+
+- 这是 DET ${mode === 'interactive' ? '互动写作' : '5 分钟限时'}题，**学生还要读题、思考、检查**
+- **答案绝不能超过 ${cap} 词**${mode === 'interactive' ? '（每个 part 都不超）' : ''}
+- 真实考场可达字数: ${guide.match(/\*\*(\d+-\d+)\s*词\*\*/)?.[1] || '100-140'} 词
+- 写超 ${cap} 词 = 不真实 = 这个示例就废了。**宁可少写，不要超**
+
+# 写作要求
+- **必须直接回应这道具体题目**（不要改成其他主题）
+- 写作质量真实匹配 ${targetLevel} 分: ${guide}
+- 写完检查：数一下词数，如果超 ${cap}，删掉冗余句子
+
+# 考试现实性约束
+- 学生考场无网无资料，**禁止杜撰具体数据/年份/报告**（如 "a 2023 study showed 47%"）
+- 可用真实命名（Apple/Google/Harvard 等）+ 行为描述 / 个人经历 / 常识观察
+
+# 输出格式（严格按 XML 标签）
+
+${outFormat}
+
+不要任何前言、解释、注释，**不要重复输出题目**，只输出 answer 标签内容。`;
+      } else {
+        const interactiveExtra = mode === 'interactive'
+          ? '\n互动模式额外输出 <prompt2> 和 <answer2>（Part 2 必须呼应 Part 1 内容）'
+          : '';
+        const cap = wordCaps[closest] || 140;
+        examplePrompt = `你是英语写作示例生成器，专门给 AI 精批系统生成测试样本。
 
 # 任务
 生成一个【${modeDesc[mode] || modeDesc.interview}】的示例。
 
+# 🚫 词数硬上限（违反直接判失败）
+
+- 这是 DET ${mode === 'interactive' ? '互动写作' : '5 分钟限时'}题
+- **答案绝不能超过 ${cap} 词**${mode === 'interactive' ? '（每个 part 都不超）' : ''}
+- 真实考场可达字数: ${guide.match(/\*\*(\d+-\d+)\s*词\*\*/)?.[1] || '100-140'} 词
+- 写超 ${cap} 词 = 不真实
+
 # 关键要求
-- **目标水平：${targetLevel} 分**（DET 0-160 制对应水平）
+- **目标水平：${targetLevel} 分**（DET 10-160 制对应水平）
 - 答案写作质量必须**真实匹配**这个水平：${guide}
 - 题目要自然、贴近真实考试 / 作业风格
-- 答案长度按目标水平合理：分越低写得越短/糙，分越高写得越精炼
+
+# 考试现实性约束
+- 学生考场无网无资料，**禁止杜撰具体数据/年份/报告**（如 "a 2023 study showed 47%"）
+- 可用真实命名（Apple/Google/Harvard 等）+ 行为描述 / 个人经历 / 常识观察
 
 # 输出格式（严格按 XML 标签）
 
@@ -984,8 +1192,9 @@ const server = http.createServer((req, res) => {
 <answer>学生答案内容</answer>${interactiveExtra}
 
 不要任何前言、解释、注释，只输出标签内容。`;
+      }
 
-      console.log(`[${new Date().toISOString()}] 生成示例 mode=${mode} 目标=${targetLevel} (${CLI.label})`);
+      console.log(`[${new Date().toISOString()}] 生成示例 mode=${mode} 目标=${targetLevel} userPrompt=${hasUserPrompt ? '有' : '无'} (${CLI.label})`);
       const llm = spawnLLM(examplePrompt);
       llm.proc.on('close', code => {
         if (code === 0) {
@@ -1025,10 +1234,10 @@ const server = http.createServer((req, res) => {
       // Level-calibrated specs (student at 85 Writing → progressive ladder)
       // DET 5 min 实战标准 — 不是 IELTS Task 2，词数远比想象短
       const LEVEL_SPECS = {
-        95:  { name: '95 (B1+, IELTS 5.5)', words: '95-115', awl: '3-4', namedEx: '1（可泛指）', transitions: '1-2', structure: '3 段（intro + body + conclusion）', complexity: '主谓宾为主，1-2 个 because/although', vocab: '少量 B2+ 词，自然嵌入', focus: 'DET 5 min 真实可达。重点：写够 100 词 + 段落分明 + 1 个具体例子' },
-        105: { name: '105 (B2-, IELTS 6.0)', words: '115-135', awl: '5-7', namedEx: '1-2（可命名）', transitions: '2', structure: '3-4 段', complexity: '复合句 + 关系从句各 1 处', vocab: '部分 B2+ 词，加 although/while', focus: '95 → 105 的下一步。重点：100+ 词 + 几个 B2+ 词 + 命名例子' },
-        115: { name: '115 (B2+, IELTS 6.5) 目标', words: '130-150', awl: '8-10', namedEx: '2（命名 + 1 数据）', transitions: '2-3', structure: '4 段（含让步反驳更佳，3 段亦可）', complexity: '多复合句 + 1 处让步反驳', vocab: '稳定 B2+ 词 + 高分转折词', focus: 'DET 115 实战水平：130+ 词 + 让步段 + 数据例子' },
-        125: { name: '125 (B2-C1, IELTS 6.5+)', words: '150-175', awl: '10-12', namedEx: '2-3（含具体数据）', transitions: '3', structure: '4-5 段 + 升华结尾', complexity: '复合句 + 关系从句 + 1 处被动/倒装', vocab: 'B2+ 词稳定 + 偶尔 C1 词', focus: '略超目标，给 115 留余量；不要堆 320 词，没人 5 min 写得到' },
+        95:  { name: '95 (B1+, IELTS 5.5)', words: '95-115', awl: '3-4', namedEx: '1 个真实公司/人/学校名 或 个人经历（不杜撰数据）', transitions: '1-2', structure: '3 段（intro + body + conclusion）', complexity: '主谓宾为主，1-2 个 because/although', vocab: '少量 B2+ 词，自然嵌入', focus: 'DET 5 min 真实可达。重点：写够 100 词 + 段落分明 + 1 个具体例子' },
+        105: { name: '105 (B2-, IELTS 6.0)', words: '115-135', awl: '5-7', namedEx: '1-2 个真实命名（公司/人/校）+ 行为描述，可加个人经历，不杜撰数据', transitions: '2', structure: '3-4 段', complexity: '复合句 + 关系从句各 1 处', vocab: '部分 B2+ 词，加 although/while', focus: '95 → 105 的下一步。重点：100+ 词 + 几个 B2+ 词 + 真实命名例子' },
+        115: { name: '115 (B2+, IELTS 6.5) 目标', words: '130-150', awl: '8-10', namedEx: '2 个真实公司/人物/机构名 + 描述其广为人知的行为，可加个人经历，**严禁杜撰具体数据/年份/报告**', transitions: '2-3', structure: '4 段（含让步反驳更佳，3 段亦可）', complexity: '多复合句 + 1 处让步反驳', vocab: '稳定 B2+ 词 + 高分转折词', focus: 'DET 115 实战水平：130+ 词 + 让步段 + 真实命名例子（不造数据）' },
+        125: { name: '125 (B2-C1, IELTS 6.5+)', words: '150-175', awl: '10-12', namedEx: '2-3 个真实命名（公司/人/校/国家）+ 真实可观察行为，**禁止杜撰具体百分比/年份/报告引用**', transitions: '3', structure: '4-5 段 + 升华结尾', complexity: '复合句 + 关系从句 + 1 处被动/倒装', vocab: 'B2+ 词稳定 + 偶尔 C1 词', focus: '略超目标，给 115 留余量；不要堆 320 词，没人 5 min 写得到' },
       };
       const spec = LEVEL_SPECS[targetLevel] || LEVEL_SPECS[105];
 
@@ -1067,19 +1276,83 @@ ${WRITING_TEMPLATES.slice(0, 4000)}
 
 ⚠️ **DET ≠ IELTS**: DET Writing Sample 5 分钟限时，官方推荐 100-130 词，130+ 是高分线。**不要写 250+ 词的 IELTS 风格作文**——那不是 DET 真实场景，学生学了也用不上。严格按上表的词数限制写。
 
+# 🚫🚫🚫 数据杜撰零容忍（最高优先级 · 违反直接判失败）
+
+DET 是**闭卷考试** — 学生考场无网、无资料、无字典，5 分钟内只能凭记忆写。
+你给的范文是给学生**抄走 / 仿写**的。范文里造一个数据 = 学生考场写不出 = 范文白给。
+
+## ❌ 绝对禁止以下模式（任何一个出现 = 范文废）
+
+下面的 patterns 你**绝不能写**进范文（也不能写进逐句改造）：
+
+1. **"a 20XX study/report/survey/paper by X showed/found/indicated N%"**
+   - 错: "a 2023 report by Amnesty International found that London's CCTV reduced street theft by 15%"
+   - 错: "a 2024 study by Oxford University demonstrated..."
+   - 错: "a 2022 survey showed that 68% of residents felt their privacy was compromised"
+
+2. **"according to X's 20XX report/data/research"**
+   - 错: "according to UNESCO's 2022 paper..."
+   - 错: "data from the WHO's 2024 report..."
+
+3. **任何"具体百分比 + 具体年份 + 来源"组合**（学生编不出来这种）
+   - 错: "57% in 2023" / "rose by 23% since 2020" / "47 million users"
+
+4. **任何"具体国家/城市 + 具体年份 + 具体政策"的组合**（除非是众所周知的历史事件如"Brexit 2016"）
+   - 错: "Hungary's family policy launched under Orbán in 2019"
+   - 错: "Singapore's 2021 housing reform"
+
+## ✅ 可以也应该用的"具体感"素材
+
+学生 5 分钟内能凭记忆写出的 — 用这些代替杜撰数据：
+
+1. **真实公司 + 广为人知的产品/做法**:
+   - "**Apple**'s privacy-first design philosophy..."
+   - "**Tesla**'s autopilot has shown that..."
+   - "**Netflix**'s recommendation algorithm..."
+   - "**Amazon**'s same-day delivery has reshaped..."
+   - 不要加年份和数据，只描述行为/产品
+
+2. **真实公众人物 + 真实事迹**:
+   - "**Steve Jobs** insisted on simplicity in design..."
+   - "**Elon Musk**'s SpaceX has demonstrated..."
+
+3. **真实大学/机构 — 只用名字描述属性**:
+   - "Top universities like **Harvard** and **MIT** prioritize..."（✓ 只是 reference，不造研究内容）
+   - 错: "Harvard's 2023 study found 47%"（❌ 杜撰）
+
+4. **个人经历**（最安全 + 最自然）:
+   - "In my high school, students who balanced..."
+   - "When I was preparing for university..."
+   - "A close friend of mine once..."
+
+5. **常识性观察 / 行业泛指**:
+   - "Most teenagers today spend hours on social media..."
+   - "Many tech companies now offer remote work..."
+   - "In countries with strong public transport, citizens..."
+
+## 🔍 范文写完前的自检（你必须执行）
+
+写完范文后，扫描全文 — 出现以下任何一个就**重写那句**：
+- [ ] 任何 4 位数年份（2020 / 2021 / 2022 / 2023 / 2024 / 2025）→ 删
+- [ ] 任何百分号数字（15% / 47% / 68%）→ 删
+- [ ] 任何 "a study / a report / a survey / a paper" 短语 → 删
+- [ ] 任何 "according to X" + 数据 → 删
+
+写完后扫一遍，再交。范文里**禁止任何具体数字**，除非是常识性的（比如"24 hours"、"5 minutes"、"three siblings"）。
+
 # ⚠️ 关键格式要求：行内翻译
 
 **所有加粗的英文学术词、命名例子、高分转折词，必须在加粗结束后立即接 \`<sup>中文翻译</sup>\` 标签**，方便中国学生阅读不查字典。
 
-格式示例：
-- **plummeting**<sup>骤降的</sup> birth rates have triggered an **unprecedented**<sup>前所未有的</sup> crisis.
-- **Hungary**<sup>匈牙利</sup>'s family policy launched under **Viktor Orbán**<sup>欧尔班</sup> in **2019**<sup>2019年</sup>.
-- **Consequently**<sup>因此</sup>, fertility climbed.
+格式示例（注意：示例本身遵守"零数据杜撰"规则）：
+- **plummeting**<sup>骤降的</sup> attention spans have created an **unprecedented**<sup>前所未有的</sup> challenge for educators.
+- **Apple**<sup>苹果</sup>'s long-standing **commitment**<sup>承诺</sup> to user privacy reshaped the entire industry.
+- **Consequently**<sup>因此</sup>, students who develop deep focus skills consistently outperform their peers.
 
 **翻译规则**：
-- AWL 学术词 → 中文释义（2-4 字，简洁）
-- 命名实体（国家/人物/公司/机构）→ 中文音译或简称
-- 数据/年份 → 简短中文标注
+- 学术词 → 中文释义（2-4 字，简洁）
+- 命名实体（公司/人物/机构）→ 中文音译或简称
+- ❌ **不要标注年份和数据**（因为范文不该有这些）
 - 高分转折词 → 中文连接词
 - 短语整体加粗（如 "financial incentives"）→ 一个 sup 翻译整个短语
 
@@ -1432,11 +1705,13 @@ ${question}
         return;
       }
 
-      const correctionPrompt = `你是 DET 写作订正系统，红笔批改风格。
+      const correctionPrompt = `你是 DET 写作订正系统，红笔批改 + DET 评分员双角色。
 
 # 任务
 学生先写了一篇答案，被精批指出了若干错误。学生根据反馈改写了一版。
-对比原文和改写，做"红笔订正"分析。
+你要做两件事：
+1. **红笔订正分析**: 对比原文 vs 改写，标出修复 / 仍错 / 新错
+2. **重新打分**: 把改写当作一篇全新 DET 答卷打 7 维分数（同精批 holistic 标准）
 
 # 上下文
 
@@ -1452,11 +1727,22 @@ ${previousReview ? previousReview.slice(0, 4000) : '(未提供，自行根据原
 ## 学生改写
 ${rewrittenAnswer}
 
-# 你的输出（严格按格式，不要包裹 markdown 代码块）
+# 评分对齐（必读）
+
+DET 评分是 AI holistic — 你也是 AI。改写版按 7 维 holistic 标准打分（对齐登登：219 词 / 0 错 / B2 / 4 段 = 155）。
+- **0 错 = grammar 100**；不要保留之前的低分判罚
+- 这是**独立评估**，不是和原文比较打折
+- 200 词 = length 100，B2 词稳定 + 4 段 = 各维 90+
+
+# 你的输出（严格按下列顺序，不要包裹 markdown 代码块）
 
 <correction>
 {"original":N,"fixed":N,"stillWrong":N,"newErrors":N}
 </correction>
+
+<scores>
+{"content":N,"structure":N,"grammar":N,"complexity":N,"vocab":N,"diversity":N,"length":N,"total":N,"ielts":"X.X","cefr":"BX"}
+</scores>
 
 ## 订正报告
 
@@ -1481,6 +1767,21 @@ ${rewrittenAnswer}
 | # | 原错误 | 改写后 | 状态 | 备注 |
 |---|--------|--------|------|------|
 | 1 | "原句片段" | "改写片段" | ✅ 已修复 / ❌ 仍错 / ⚠️ 新错 | 一句话点评 |
+
+## 改写版剩余错误（按改写文中出现顺序，供下一轮订正）
+
+> 如果改写完全没错，本节写"🎉 完美无误，无需再改"。
+> 否则列出改写文里**仍存在的所有错误**（仍错 + 新错合并 + 任何新发现的小问题），按它们在改写文中**从前到后的出现顺序**编号 1..N。
+> 每条"原文"必须是改写文中的**精确字符串**（学生能搜到的原话）。
+
+| # | 类型 | 原文 | 修正 | 解释 |
+|---|------|------|------|------|
+
+## 改写版评分对比
+
+| 维度 | 原作 (估) | 改写 | 变化 |
+|------|----------|------|------|
+| 总分 /160 | X | Y | ±Z |
 
 ## 老师点评
 

@@ -1508,18 +1508,21 @@ ${rewrittenAnswer}
     return await callLLM(fullPrompt);
   }
 
-  function buildExamplePrompt({ mode, targetLevel }) {
+  function buildExamplePrompt({ mode, targetLevel, userPrompt, userPrompt2 }) {
+    // DET 5 min 实战字数：包含读题+思考+写作+检查，真实可达 100-160 词
     const levelGuides = {
-      95:  '大量语法错（拼写/单复数/时态）+ 口语化用词 + 基础 A2/B1 词汇 + 句子简单短散',
-      105: '少量语法错（2-4 处）+ 部分 B2 词汇 + 1-2 个简单复合句 + 表达基本清楚',
-      115: '清晰论点 + 1 个命名例子 + 至少 1 个 B2+ 转折词 + 让步段（可选）+ 0-2 处小错',
-      125: '精炼论证 + 命名例子 + 数据 + 复合句多变 + 0 错 + 让步反驳 + C1 词汇',
-      135: '高水平论证 + 多重例证 + 倒装/被动等高级句式 + C1+ 词汇 + 严格 0 错',
-      145: '接近母语 + 修辞张力 + 论证层次清晰 + C2 词汇精准 + 0 错',
+      95:  '**80-100 词**。大量语法错（拼写/单复数/时态）+ 口语化用词 + 基础 A2/B1 词汇 + 句子简单短散',
+      105: '**100-120 词**。少量语法错（2-4 处）+ 部分 B2 词汇 + 1-2 个简单复合句 + 表达基本清楚',
+      115: '**120-140 词**。清晰论点 + 1 个真实命名例子（公司/人/学校名）+ 至少 1 个 B2+ 转折词 + 让步段（可选）+ 0-2 处小错。**禁止杜撰具体数据/年份/报告**',
+      125: '**135-155 词**。精炼论证 + 真实命名例子 + 个人经历或合理推断 + 复合句多变 + 0 错 + 让步反驳 + C1 词汇。**禁止杜撰具体数据/年份/报告**',
+      135: '**145-165 词**。高水平论证 + 真实多重例证 + 倒装/被动等高级句式 + C1+ 词汇 + 严格 0 错。**禁止杜撰具体数据/年份/报告**',
+      145: '**155-175 词**。接近母语 + 修辞张力 + 论证层次清晰 + C2 词汇精准 + 0 错。**禁止杜撰具体数据/年份/报告**',
     };
+    const wordCaps = { 95: 100, 105: 120, 115: 140, 125: 155, 135: 165, 145: 175 };
     const closest = Object.keys(levelGuides).map(Number)
       .reduce((p, c) => Math.abs(c - targetLevel) < Math.abs(p - targetLevel) ? c : p, 95);
     const guide = levelGuides[closest];
+    const cap = wordCaps[closest] || 140;
 
     const modeDesc = {
       interview: 'DET Writing Sample（写作面试）— 5 分钟限时单题作文',
@@ -1527,20 +1530,76 @@ ${rewrittenAnswer}
       academic: '通用学术写作 essay — 不限字数 / 不限模板',
     };
 
+    const hasUserPrompt = userPrompt && userPrompt.trim();
     const interactiveExtra = mode === 'interactive'
-      ? '\n互动模式额外输出 <prompt2> 和 <answer2>（Part 2 必须呼应 Part 1 内容）'
+      ? (hasUserPrompt
+          ? `\n互动模式：Part 1 题目已给出，**请基于它**生成 P1 答案。Part 2 题目${userPrompt2 && userPrompt2.trim() ? '也已给出，基于它生成答案' : '请你合理生成（必须呼应 P1 内容）'}。`
+          : '\n互动模式额外输出 <prompt2> 和 <answer2>（Part 2 必须呼应 Part 1 内容）')
       : '';
+
+    if (hasUserPrompt) {
+      const p2Block = mode === 'interactive'
+        ? (userPrompt2 && userPrompt2.trim()
+            ? `\n\n# Part 2 题目（用户给定，**禁止改写**）\n\n${userPrompt2.trim()}\n\n请只输出 <answer2>P2 答案</answer2>`
+            : `\n\n# Part 2 题目（自行生成，必须自然衔接 P1）\n\n请输出 <prompt2>P2 题目</prompt2><answer2>P2 答案</answer2>`)
+        : '';
+
+      return `你是英语写作示例生成器。用户已给出题目，**绝对不要改写题目**，只生成匹配水平的答案。
+
+# 题目（用户给定，原样保留）
+
+${userPrompt.trim()}${p2Block}
+
+# 任务
+针对上面这道【${modeDesc[mode] || modeDesc.interview}】题目，写一篇**${targetLevel} 分水平**的学生答案。
+
+# 🚫 词数硬上限（违反直接判失败）
+
+- 这是 DET ${mode === 'interactive' ? '互动写作' : '5 分钟限时'}题，**学生还要读题、思考、检查**
+- **答案绝不能超过 ${cap} 词**${mode === 'interactive' ? '（每个 part 都不超）' : ''}
+- 真实考场可达字数: ${guide.match(/\*\*(\d+-\d+)\s*词\*\*/)?.[1] || '100-140'} 词
+- 写超 ${cap} 词 = 不真实 = 这个示例就废了。**宁可少写，不要超**
+
+# 写作要求
+- **必须直接回应这道具体题目**（不要改成其他主题）
+- 写作质量真实匹配 ${targetLevel} 分: ${guide}
+- 写完检查：数一下词数，如果超 ${cap}，删掉冗余句子
+
+# 考试现实性约束
+- 学生考场无网无资料，**禁止杜撰具体数据/年份/报告**（如 "a 2023 study showed 47%"）
+- 可用真实命名（Apple/Google/Harvard 等）+ 行为描述 / 个人经历 / 常识观察
+
+# 输出格式（严格按 XML 标签）
+
+${mode === 'interactive' && (!userPrompt2 || !userPrompt2.trim())
+  ? '<answer>P1 答案</answer><prompt2>P2 题目</prompt2><answer2>P2 答案</answer2>'
+  : mode === 'interactive'
+    ? '<answer>P1 答案</answer><answer2>P2 答案</answer2>'
+    : '<answer>答案</answer>'}
+
+不要任何前言、解释、注释，**不要重复输出题目**，只输出 answer 标签内容。`;
+    }
 
     return `你是英语写作示例生成器，专门给 AI 精批系统生成测试样本。
 
 # 任务
 生成一个【${modeDesc[mode] || modeDesc.interview}】的示例，用于让用户点击精批后看 AI 给的反馈。
 
+# 🚫 词数硬上限（违反直接判失败）
+
+- 这是 DET ${mode === 'interactive' ? '互动写作' : '5 分钟限时'}题
+- **答案绝不能超过 ${cap} 词**${mode === 'interactive' ? '（每个 part 都不超）' : ''}
+- 真实考场可达字数: ${guide.match(/\*\*(\d+-\d+)\s*词\*\*/)?.[1] || '100-140'} 词
+- 写超 ${cap} 词 = 不真实
+
 # 关键要求
-- **目标水平：${targetLevel} 分**（DET 0-160 制对应水平）
+- **目标水平：${targetLevel} 分**（DET 10-160 制对应水平）
 - 答案写作质量必须**真实匹配**这个水平：${guide}
 - 题目要自然、贴近真实考试 / 作业风格
-- 答案长度按目标水平合理：分越低写得越短/糙，分越高写得越精炼
+
+# 考试现实性约束
+- 学生考场无网无资料，**禁止杜撰具体数据/年份/报告**（如 "a 2023 study showed 47%"）
+- 可用真实命名（Apple/Google/Harvard 等）+ 行为描述 / 个人经历 / 常识观察
 
 # 输出格式（严格按 XML 标签，不要 markdown 包裹）
 

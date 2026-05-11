@@ -321,27 +321,59 @@
     .hist-row:hover { background: var(--paper-2); }
     .hist-row:last-child { border-bottom: 0; }
 
-    /* Correction highlights — Chinese-teacher red ink style */
+    /* Error markers in correction-panel original text */
+    .err-mark {
+      background: rgba(179, 56, 43, 0.08);
+      text-decoration: underline wavy var(--bad);
+      text-decoration-thickness: 1.5px;
+      text-underline-offset: 3px;
+      cursor: help;
+      padding: 0 1px;
+      border-radius: 2px;
+      position: relative;
+      transition: background .12s;
+    }
+    .err-mark:hover {
+      background: rgba(179, 56, 43, 0.20);
+    }
+    .err-mark sup.err-num {
+      color: var(--bad);
+      font-weight: 700;
+      font-size: 0.65em;
+      margin-left: 1px;
+      vertical-align: super;
+      background: white;
+      border: 1px solid var(--bad);
+      border-radius: 50%;
+      padding: 0 3px;
+      line-height: 1;
+    }
+
+    /* Correction highlights — semantic colors */
     .fx-good {
-      background: rgba(217, 76, 59, 0.12);
-      color: #b3382b;
-      border-bottom: 2px solid #b3382b;
+      background: rgba(47, 122, 74, 0.14);
+      color: #2f7a4a;
+      border-bottom: 2px solid #2f7a4a;
       padding: 0 2px;
       border-radius: 2px;
       font-weight: 600;
     }
     .fx-bad {
-      color: var(--ink-3);
+      background: rgba(179, 56, 43, 0.10);
+      color: var(--bad);
       text-decoration: line-through;
       text-decoration-color: var(--bad);
-      opacity: 0.75;
+      text-decoration-thickness: 1.5px;
+      padding: 0 2px;
+      border-radius: 2px;
     }
     .fx-new {
-      background: rgba(192, 139, 26, 0.16);
+      background: rgba(192, 139, 26, 0.18);
       color: #8a6a14;
       border-bottom: 1.5px wavy var(--warn);
       padding: 0 2px;
       border-radius: 2px;
+      font-weight: 500;
     }
 
     /* Animations */
@@ -419,7 +451,22 @@
       }
       .markdown h2 { font-size: 16px !important; }
       .markdown h3 { font-size: 14px !important; }
+    }
 
+    /* Practice rail — 窄栏专用紧凑 markdown */
+    #practice-rail-list .markdown { font-size: 11px; line-height: 1.55; }
+    #practice-rail-list .markdown h1 { font-size: 13px; margin: .5rem 0 .3rem; padding-bottom: 0; border: 0; }
+    #practice-rail-list .markdown h2 { font-size: 12px; margin: .5rem 0 .25rem; padding-bottom: 0; border: 0; }
+    #practice-rail-list .markdown h3 { font-size: 11.5px; margin: .4rem 0 .2rem; }
+    #practice-rail-list .markdown p,
+    #practice-rail-list .markdown li { font-size: 11px; }
+    #practice-rail-list .markdown table { display: block; overflow-x: auto; font-size: 10.5px; }
+    #practice-rail-list .markdown blockquote { padding: .35rem .55rem; margin: .4rem 0; font-size: 10.5px; }
+    #practice-rail-list .markdown sup { font-size: .58em; }
+    #practice-rail-list .markdown code { font-size: .85em; padding: 0 3px; }
+    #practice-rail-list .markdown ul,
+    #practice-rail-list .markdown ol { margin: .3rem 0 .3rem 1.1rem; }
+    @media (max-width: 800px) {
       /* 笔记本 / 历史记录卡片网格 */
       #notes-list { grid-template-columns: 1fr !important; }
 
@@ -574,6 +621,7 @@
 
           <div class="row" style="gap: 8px;">
             <button id="submit" class="wf-btn accent">🚀 精批</button>
+            <button id="practice-toggle" class="wf-btn ghost" title="边写边看模板">📚 练习模式</button>
             <button id="clear" class="wf-btn ghost">清空</button>
             <button id="example" class="wf-btn ghost">填充示例</button>
             <span style="margin-left: auto; display: flex; align-items: center; gap: 6px;">
@@ -591,7 +639,26 @@
         </div>
       </div>
 
-      <!-- ====== Col 2: Teacher Rail (fills row height) ====== -->
+      <!-- ====== Practice Rail (toggleable, sits between input and teacher) ====== -->
+      <div id="practice-rail" hidden class="wf-card" style="display: flex; flex-direction: column; gap: 10px; min-width: 0; min-height: 0; overflow: hidden; padding: 12px; border-color: #3b6f8f; background: #f3f7fa;">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 6px; border-bottom: 1.5px solid var(--ink-4);">
+          <div>
+            <div style="font-size: 14px; font-weight: 700; color: #2d5670;">📚 模板速查</div>
+            <div id="practice-rail-mode" class="font-mono" style="font-size: 10px; color: var(--ink-3); margin-top: 2px;"></div>
+          </div>
+          <button id="practice-rail-close" class="wf-btn tiny ghost" title="关闭">×</button>
+        </div>
+
+        <input id="practice-rail-search" class="wf-input" type="text" placeholder="搜索笔记内容..." style="font-size: 12px; padding: 5px 10px;">
+
+        <div id="practice-rail-list" style="flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 4px;"></div>
+
+        <div style="font-size: 10px; color: var(--ink-3); border-top: 1px dashed var(--ink-4); padding-top: 6px; line-height: 1.5;">
+          💡 点笔记标题 → 展开看完整内容；点 📋 → 复制全文
+        </div>
+      </div>
+
+      <!-- ====== Col 2/3: Teacher Rail (fills row height) ====== -->
       <div id="teacher-rail" class="wf-card accent" style="display: flex; flex-direction: column; gap: 10px; min-width: 0; min-height: 0; overflow: hidden;">
         <div style="display: flex; align-items: center; gap: 10px;">
           <div style="width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid var(--accent-ink); background: var(--paper); display: flex; align-items: center; justify-content: center; font-size: 18px;">👨‍🏫</div>
@@ -680,6 +747,7 @@
         </button>
         <div class="row tight">
           <button id="open-correction" class="wf-btn tiny accent">✏️ 改写订正</button>
+          <button id="extract-to-notes" class="wf-btn tiny ghost">📌 摘录到笔记</button>
           <button id="export" class="wf-btn tiny ghost">⬇️ 导出</button>
           <button id="save-history" class="wf-btn tiny ghost">💾 存档</button>
           <button id="copy-rewrite" class="wf-btn tiny ghost">📋 复制 115 改写</button>
@@ -699,8 +767,8 @@
       <div id="correction-input">
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
           <div>
-            <div class="wf-tag" style="margin-bottom: 6px;">📝 原文（参考精批中错误清单改写）</div>
-            <pre id="correction-original" class="font-mono" style="white-space: pre-wrap; padding: 10px; background: var(--paper-2); border: 1.5px solid var(--ink-4); border-radius: 6px; line-height: 1.7; font-size: 13px; max-height: 320px; overflow-y: auto; margin: 0;"></pre>
+            <div class="wf-tag" style="margin-bottom: 6px;">📝 原文（红色波浪线 = 错误位置 · 鼠标悬停看修正）</div>
+            <div id="correction-original" class="font-mono" style="white-space: pre-wrap; padding: 10px; background: var(--paper-2); border: 1.5px solid var(--ink-4); border-radius: 6px; line-height: 1.9; font-size: 13px; max-height: 320px; overflow-y: auto; margin: 0;"></div>
             <div id="correction-errors" style="margin-top: 8px; padding: 8px 10px; background: var(--paper-2); border: 1px dashed var(--ink-3); border-radius: 6px; font-size: 12px; max-height: 220px; overflow-y: auto;"></div>
           </div>
           <div>
@@ -721,10 +789,13 @@
       <!-- RESULT MODE -->
       <div id="correction-result" hidden>
         <div id="correction-stats" style="margin-bottom: 14px; padding: 14px; background: var(--paper-2); border: 1.5px solid var(--ink); border-radius: 8px; text-align: center;"></div>
-        <div style="display: flex; gap: 16px; justify-content: center; align-items: center; margin-bottom: 12px; font-size: 12px; color: var(--ink-3);">
-          <span><span class="fx-good">✓ 正确修复</span></span>
-          <span><span class="fx-bad">仍然错误</span></span>
-          <span><span class="fx-new">引入新错误</span></span>
+        <div style="display: flex; gap: 12px; justify-content: center; align-items: center; margin-bottom: 12px; padding: 10px 12px; background: var(--paper-2); border: 1.5px dashed var(--ink-3); border-radius: 8px; font-size: 12px; color: var(--ink-2); flex-wrap: wrap;">
+          <strong style="color: var(--ink);">📖 标注图例：</strong>
+          <span><span class="fx-good">绿色</span> = 你正确修复了的部分</span>
+          <span style="color: var(--ink-4);">·</span>
+          <span><span class="fx-bad">红色删除线</span> = 仍然错误（没改对）</span>
+          <span style="color: var(--ink-4);">·</span>
+          <span><span class="fx-new">黄色波浪</span> = 改写时新引入的错误</span>
         </div>
         <div id="correction-content" class="markdown" style=""></div>
         <div class="row" style="margin-top: 16px; justify-content: center; gap: 8px;">
@@ -1491,7 +1562,8 @@
       } else if (type === 'correction') {
         lastCorrectionResult = item.response;
         lastCorrectionAnswer = item.answer || '';
-        $('correction-original').textContent = item.originalAnswer || '';
+        correctionRawOriginal = item.originalAnswer || '';
+        $('correction-original').textContent = correctionRawOriginal;  // history view: plain text (no errors to highlight)
         $('correction-rewrite').value = item.answer || '';
         renderCorrectionResult(item.response);
         $('correction-panel').hidden = false;
@@ -1690,21 +1762,47 @@
       const btn = $('example');
       const level = parseInt($('model-level')?.value) || 105;
       const orig = btn.textContent;
+      const userPrompt = $('prompt').value.trim();
+      const userPrompt2 = currentMode === 'interactive' ? $('prompt2').value.trim() : '';
+      const hasUserPrompt = !!userPrompt;
+
       btn.disabled = true;
-      btn.innerHTML = '<span class="loading-dots">生成中</span>';
+      btn.innerHTML = hasUserPrompt
+        ? '<span class="loading-dots">按你的题目生成答案</span>'
+        : '<span class="loading-dots">生成中</span>';
       try {
-        const ex = await BYOK.generateExample({ mode: currentMode, targetLevel: level });
-        if (!ex.prompt && !ex.answer) throw new Error('AI 没返回有效示例');
-        $('prompt').value = ex.prompt || '';
-        $('answer').value = ex.answer || '';
-        if (currentMode === 'interactive') {
-          $('prompt2').value = ex.prompt2 || '';
-          $('answer2').value = ex.answer2 || '';
+        const ex = await BYOK.generateExample({
+          mode: currentMode,
+          targetLevel: level,
+          userPrompt,
+          userPrompt2,
+        });
+        if (!ex.prompt && !ex.answer && !ex.answer2) throw new Error('AI 没返回有效示例');
+
+        // 用户已写题目时：保留题目，只填答案
+        if (hasUserPrompt) {
+          if (ex.answer) $('answer').value = ex.answer;
+          if (currentMode === 'interactive') {
+            if (!userPrompt2 && ex.prompt2) $('prompt2').value = ex.prompt2;
+            if (ex.answer2) $('answer2').value = ex.answer2;
+          }
+        } else {
+          // 空白起步：题目+答案都填
+          $('prompt').value = ex.prompt || '';
+          $('answer').value = ex.answer || '';
+          if (currentMode === 'interactive') {
+            $('prompt2').value = ex.prompt2 || '';
+            $('answer2').value = ex.answer2 || '';
+          }
         }
       } catch (e) {
         console.warn('AI 生成示例失败，回退到本地:', e.message);
-        fillLocalFallback(level);
-        $('practice-status').textContent = `⚠️ AI 生成失败（${e.message.slice(0, 60)}），用了本地示例`;
+        if (typeof fillLocalFallback === 'function' && !hasUserPrompt) {
+          fillLocalFallback(level);
+          $('practice-status').textContent = `⚠️ AI 生成失败（${e.message.slice(0, 60)}），用了本地示例`;
+        } else {
+          $('practice-status').textContent = `❌ 生成失败: ${e.message.slice(0, 80)}`;
+        }
         setTimeout(() => { $('practice-status').textContent = ''; }, 4000);
       } finally {
         btn.disabled = false;
@@ -2096,24 +2194,147 @@
       return sections.join('\n\n').trim();
     }
 
+    // Parse error rows from review markdown — returns [{num, type, original, correction, explanation}]
+    function parseErrorRows(reviewMd) {
+      const errorMd = extractErrorListFromReview(reviewMd);
+      if (!errorMd) return [];
+      const rows = [];
+      // Match table rows: | N | type | original | correction | explanation |
+      // 5-col regex with non-greedy capture
+      const rowRe = /^\|\s*(\d+)\s*\|\s*([^|\n]+?)\s*\|\s*([^|\n]+?)\s*\|\s*([^|\n]+?)\s*\|\s*([^|\n]+?)\s*\|/gm;
+      let m;
+      while ((m = rowRe.exec(errorMd)) !== null) {
+        rows.push({
+          num: parseInt(m[1]),
+          type: m[2].trim(),
+          original: cleanErrorSnippet(m[3]),
+          correction: cleanErrorSnippet(m[4]),
+          explanation: m[5].trim(),
+        });
+      }
+      return rows;
+    }
+
+    function cleanErrorSnippet(s) {
+      return (s || '')
+        .replace(/^["'""'']+|["'""'']+$/g, '')   // strip surrounding quotes (ascii + chinese)
+        .replace(/\*\*/g, '')                    // strip markdown bold markers
+        .replace(/`/g, '')                       // strip inline code marks
+        .trim();
+    }
+
+    // Sort errors by original-text position, re-number 1..N, and produce highlighted HTML
+    function highlightAndRenumber(rawText, errors) {
+      if (!rawText) return { html: '', orderedErrors: [] };
+
+      // Step 1: locate each error in raw text (use a moving cursor so duplicates work)
+      let cursor = 0;
+      const located = [];
+      const remaining = [...errors];
+      // Greedy left-to-right pass: at each step, pick the error whose first
+      // occurrence (from cursor) appears earliest. Skip ones we can't find.
+      while (remaining.length > 0) {
+        let pickIdx = -1;
+        let pickPos = Infinity;
+        for (let i = 0; i < remaining.length; i++) {
+          const snip = remaining[i].original;
+          if (!snip || snip.length < 2) continue;
+          const p = rawText.indexOf(snip, cursor);
+          if (p !== -1 && p < pickPos) { pickPos = p; pickIdx = i; }
+        }
+        if (pickIdx === -1) break;
+        const e = remaining.splice(pickIdx, 1)[0];
+        located.push({ ...e, pos: pickPos });
+        cursor = pickPos + 1; // allow overlap-resistant progress
+      }
+
+      // Step 2: assign sequential display numbers in document order
+      const orderedErrors = located.map((e, i) => ({ ...e, displayNum: i + 1 }));
+
+      // Step 3: build HTML by walking through orderedErrors and slicing
+      let html = '';
+      let p = 0;
+      orderedErrors.forEach(err => {
+        if (err.pos < p) return; // overlap protection — skip nested
+        html += escapeHtml(rawText.slice(p, err.pos));
+        const tip = `#${err.displayNum} ${err.type}：${err.original} → ${err.correction}（${err.explanation}）`;
+        const escTip = escapeHtml(tip).replace(/"/g, '&quot;');
+        html += `<span class="err-mark" title="${escTip}">${escapeHtml(err.original)}<sup class="err-num">${err.displayNum}</sup></span>`;
+        p = err.pos + err.original.length;
+      });
+      html += escapeHtml(rawText.slice(p));
+
+      return { html, orderedErrors };
+    }
+
+    // Render error list as HTML table (in document order, with renumbered IDs)
+    function renderErrorTable(orderedErrors) {
+      if (orderedErrors.length === 0) return '';
+      const rows = orderedErrors.map(e => `
+        <tr>
+          <td style="text-align: center; font-weight: 700; color: var(--bad);">${e.displayNum}</td>
+          <td>${escapeHtml(e.type)}</td>
+          <td><code style="font-size: .85em;">${escapeHtml(e.original)}</code></td>
+          <td><code style="font-size: .85em; color: var(--good);">${escapeHtml(e.correction)}</code></td>
+          <td style="font-size: .9em;">${escapeHtml(e.explanation)}</td>
+        </tr>
+      `).join('');
+      return `
+        <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 6px;">
+          <thead>
+            <tr style="background: var(--paper); border-bottom: 1.5px solid var(--ink);">
+              <th style="padding: 4px 6px; text-align: center; width: 28px;">#</th>
+              <th style="padding: 4px 6px; text-align: left; width: 50px;">类型</th>
+              <th style="padding: 4px 6px; text-align: left;">原文</th>
+              <th style="padding: 4px 6px; text-align: left;">修正</th>
+              <th style="padding: 4px 6px; text-align: left;">解释</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+    }
+
+    let correctionRawOriginal = '';
+
     $('open-correction').onclick = () => {
       if (!lastResult) { alert('还没有精批结果'); return; }
       const original = currentMode === 'interactive'
         ? `[Part 1]\n${$('answer').value}\n\n[Part 2]\n${$('answer2').value}`
         : $('answer').value;
-      $('correction-original').textContent = original || '(无原文)';
+
+      correctionRawOriginal = original || '';
+
+      // Parse errors → sort by document position → renumber → highlight
+      const rawErrors = parseErrorRows(lastResult);
+      const { html, orderedErrors } = highlightAndRenumber(original, rawErrors);
+
+      $('correction-original').innerHTML = original
+        ? html
+        : '<span style="color: var(--ink-3);">(无原文)</span>';
+
       $('correction-rewrite').value = original || '';
       updateCorrectionWordCount();
 
-      const errors = extractErrorListFromReview(lastResult);
-      $('correction-errors').innerHTML = errors
-        ? `<div style="font-weight: 600; color: var(--accent-ink); margin-bottom: 4px;">📋 上次精批指出的问题</div>${marked.parse(errors)}`
-        : '<div style="color: var(--ink-3);">未提取到错误清单，参考上方精批正文修改</div>';
+      const countHint = orderedErrors.length > 0
+        ? `<span style="color: var(--bad); font-size: 11px; font-weight: 700;">（标红 ${orderedErrors.length} 处 · 按原文顺序编号）</span>`
+        : '';
+
+      if (orderedErrors.length > 0) {
+        $('correction-errors').innerHTML = `<div style="font-weight: 600; color: var(--accent-ink); margin-bottom: 4px;">📋 上次精批指出的问题 ${countHint}</div>${renderErrorTable(orderedErrors)}`;
+      } else {
+        // Fallback to raw markdown if parsing failed
+        const errors = extractErrorListFromReview(lastResult);
+        $('correction-errors').innerHTML = errors
+          ? `<div style="font-weight: 600; color: var(--accent-ink); margin-bottom: 4px;">📋 上次精批指出的问题</div>${marked.parse(errors)}`
+          : '<div style="color: var(--ink-3);">未提取到错误清单，参考上方精批正文修改</div>';
+      }
 
       $('correction-input').hidden = false;
       $('correction-result').hidden = true;
       $('correction-panel').hidden = false;
       $('correction-status').textContent = '';
+      correctionRound = 1;
       $('correction-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
 
@@ -2125,7 +2346,7 @@
     $('close-correction-2').onclick = closeCorrection;
 
     $('copy-original-to-rewrite').onclick = () => {
-      $('correction-rewrite').value = $('correction-original').textContent;
+      $('correction-rewrite').value = correctionRawOriginal || $('correction-original').textContent;
       updateCorrectionWordCount();
       $('correction-rewrite').focus();
     };
@@ -2139,7 +2360,7 @@
     $('submit-correction').onclick = async () => {
       const rewrite = $('correction-rewrite').value.trim();
       if (!rewrite) { alert('请填写改写'); return; }
-      const original = $('correction-original').textContent;
+      const original = correctionRawOriginal || $('correction-original').textContent;
 
       $('submit-correction').disabled = true;
       $('correction-status').innerHTML = '<span class="loading-dots">老师批改中（30-60 秒）</span>';
@@ -2165,6 +2386,9 @@
       }
     };
 
+    let lastCorrectionScores = null;
+    let lastCorrectionRemainingErrors = [];
+
     function renderCorrectionResult(text) {
       const stMatch = text.match(/<correction>([\s\S]*?)<\/correction>/);
       let stats = null;
@@ -2175,6 +2399,25 @@
         } catch {}
       }
 
+      const scMatch = text.match(/<scores>([\s\S]*?)<\/scores>/);
+      let newScores = null;
+      if (scMatch) {
+        try {
+          newScores = JSON.parse(scMatch[1].trim());
+          text = text.replace(/<scores>[\s\S]*?<\/scores>/, '').trim();
+        } catch {}
+      }
+      lastCorrectionScores = newScores;
+
+      // Get prev score from lastResult for delta
+      let prevScores = null;
+      if (lastResult) {
+        const prevMatch = lastResult.match(/<scores>([\s\S]*?)<\/scores>/);
+        if (prevMatch) { try { prevScores = JSON.parse(prevMatch[1].trim()); } catch {} }
+      }
+
+      // ====== Stats card (left side) — repair rate ======
+      let statsHTML = '';
       if (stats) {
         const total = stats.original || 0;
         const fixed = stats.fixed || 0;
@@ -2182,7 +2425,7 @@
         const newE = stats.newErrors || 0;
         const rate = total > 0 ? Math.round((fixed / total) * 100) : 0;
         const rateColor = rate >= 80 ? 'var(--good)' : rate >= 50 ? 'var(--warn)' : 'var(--bad)';
-        $('correction-stats').innerHTML = `
+        statsHTML = `
           <div style="display: flex; align-items: baseline; justify-content: center; gap: 16px;">
             <div>
               <div class="font-mono tnum" style="font-size: 36px; font-weight: 700; color: ${rateColor};">${rate}%</div>
@@ -2197,14 +2440,90 @@
             </div>
           </div>
         `;
+      }
+
+      // ====== New score card (right side) ======
+      let scoreHTML = '';
+      if (newScores) {
+        const t = newScores.total || 0;
+        const c = scoreColor(t);
+        const prevT = prevScores?.total;
+        let deltaHTML = '<span style="color: var(--ink-3); font-size: 12px;">首次评分</span>';
+        if (prevT != null) {
+          const d = t - prevT;
+          const dc = d > 0 ? 'var(--good)' : d < 0 ? 'var(--bad)' : 'var(--ink-3)';
+          deltaHTML = `<span class="font-mono tnum" style="color: ${dc}; font-size: 13px; font-weight: 700;">${prevT} → ${t} (${d >= 0 ? '+' : ''}${d}${d > 0 ? ' ↑' : d < 0 ? ' ↓' : ''})</span>`;
+        }
+        const dims = [
+          ['内容', newScores.content], ['结构', newScores.structure], ['准确', newScores.grammar],
+          ['复杂', newScores.complexity], ['深度', newScores.vocab], ['多样', newScores.diversity], ['篇幅', newScores.length],
+        ];
+        const bars = dims.map(([label, v]) => {
+          const dv = (v || 0);
+          const dc = dv >= 85 ? 'var(--good)' : dv >= 70 ? 'var(--warn)' : 'var(--bad)';
+          return `<div style="display: grid; grid-template-columns: 36px 1fr 28px; align-items: center; gap: 6px; font-size: 11px;">
+            <span style="color: var(--ink-2);">${label}</span>
+            <div style="height: 6px; background: var(--paper); border: 1px solid var(--ink-4); border-radius: 3px; overflow: hidden;"><div style="height: 100%; width: ${dv}%; background: ${dc};"></div></div>
+            <span class="font-mono tnum" style="font-weight: 700; color: ${dc}; text-align: right;">${dv}</span>
+          </div>`;
+        }).join('');
+        scoreHTML = `
+          <div style="display: flex; flex-direction: column; gap: 8px; min-width: 240px;">
+            <div style="display: flex; align-items: baseline; gap: 8px; padding-bottom: 6px; border-bottom: 1.5px solid var(--ink-4);">
+              <span class="wf-tag">📊 改写版评分</span>
+              <span class="font-mono tnum" style="font-size: 28px; font-weight: 700; color: ${c}; line-height: 1;">${t}</span>
+              <span style="font-size: 11px; color: var(--ink-3);">/160 · IELTS ${newScores.ielts || '?'} · ${newScores.cefr || '?'}</span>
+            </div>
+            <div>${deltaHTML}</div>
+            <div style="display: flex; flex-direction: column; gap: 3px;">${bars}</div>
+          </div>
+        `;
+      }
+
+      $('correction-stats').innerHTML = (statsHTML || scoreHTML)
+        ? `<div style="display: flex; align-items: stretch; justify-content: center; gap: 24px; flex-wrap: wrap;">${statsHTML}${statsHTML && scoreHTML ? '<div style="width: 1.5px; background: var(--ink-4);"></div>' : ''}${scoreHTML}</div>`
+        : '<div style="color: var(--ink-3);">订正完成（无统计数据）</div>';
+
+      // Parse remaining errors for next iteration
+      lastCorrectionRemainingErrors = parseRemainingErrors(text);
+      const rerollEl = $('restart-correction');
+      if (lastCorrectionRemainingErrors.length === 0) {
+        rerollEl.textContent = '🎉 完美无误';
+        rerollEl.disabled = true;
+        rerollEl.classList.remove('accent');
+        rerollEl.classList.add('ghost');
       } else {
-        $('correction-stats').innerHTML = '<div style="color: var(--ink-3);">订正完成（无统计数据）</div>';
+        rerollEl.textContent = `↻ 再改一版（${lastCorrectionRemainingErrors.length} 处剩余）`;
+        rerollEl.disabled = false;
+        rerollEl.classList.remove('ghost');
+        rerollEl.classList.add('accent');
       }
 
       $('correction-content').innerHTML = marked.parse(text);
       $('correction-input').hidden = true;
       $('correction-result').hidden = false;
       $('correction-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // Parse "## 改写版剩余错误" table from correction response (post-strip)
+    function parseRemainingErrors(md) {
+      // Match header anywhere
+      const sec = md.match(/##\s*改写版剩余错误[^\n]*\n([\s\S]*?)(?=\n##\s|$)/);
+      if (!sec) return [];
+      if (/完美无误|无需再改/.test(sec[1])) return [];
+      const rows = [];
+      const rowRe = /^\|\s*(\d+)\s*\|\s*([^|\n]+?)\s*\|\s*([^|\n]+?)\s*\|\s*([^|\n]+?)\s*\|\s*([^|\n]+?)\s*\|/gm;
+      let m;
+      while ((m = rowRe.exec(sec[1])) !== null) {
+        rows.push({
+          num: parseInt(m[1]),
+          type: m[2].trim(),
+          original: cleanErrorSnippet(m[3]),
+          correction: cleanErrorSnippet(m[4]),
+          explanation: m[5].trim(),
+        });
+      }
+      return rows;
     }
 
     function autoSaveCorrection() {
@@ -2226,10 +2545,43 @@
     }
 
     $('restart-correction').onclick = () => {
+      // If 0 remaining errors → nothing to do
+      if (lastCorrectionRemainingErrors.length === 0) return;
+
+      // Use last rewrite as new "原文"; highlight new errors
+      const newOriginal = lastCorrectionAnswer || '';
+      correctionRawOriginal = newOriginal;
+
+      // Renumber by document position & highlight in red
+      const { html, orderedErrors } = highlightAndRenumber(newOriginal, lastCorrectionRemainingErrors);
+      $('correction-original').innerHTML = newOriginal
+        ? html
+        : '<span style="color: var(--ink-3);">(无原文)</span>';
+
+      // Pre-fill rewrite textarea with the same text so user can edit incrementally
+      $('correction-rewrite').value = newOriginal;
+      updateCorrectionWordCount();
+
+      // Update error list panel with new ordered table
+      $('correction-errors').innerHTML = orderedErrors.length > 0
+        ? `<div style="font-weight: 600; color: var(--accent-ink); margin-bottom: 4px;">📋 上一轮订正后剩余的问题 <span style="color: var(--bad); font-size: 11px; font-weight: 700;">（标红 ${orderedErrors.length} 处）</span></div>${renderErrorTable(orderedErrors)}`
+        : '<div style="color: var(--ink-3);">没有剩余错误</div>';
+
+      // Synthesize a "previousReview" from the current correction result so server can use it as context next round
+      const synth = `## 所有错误（共 ${orderedErrors.length} 条）\n\n| # | 类型 | 原文 | 修正 | 解释 |\n|---|------|------|------|------|\n` +
+        orderedErrors.map(e => `| ${e.num} | ${e.type} | "${e.original}" | "${e.correction}" | ${e.explanation} |`).join('\n');
+      lastResult = synth + '\n\n' + (lastCorrectionScores
+        ? `<scores>${JSON.stringify(lastCorrectionScores)}</scores>`
+        : '');
+
       $('correction-input').hidden = false;
       $('correction-result').hidden = true;
+      $('correction-status').textContent = '';
+      $('correction-status').innerHTML = `<span style="color: var(--accent-ink);">📝 第 ${(correctionRound = (correctionRound || 1) + 1)} 轮订正 — 改完再点提交</span>`;
       $('correction-rewrite').focus();
     };
+
+    let correctionRound = 1;
 
     $('export-correction').onclick = () => {
       if (!lastCorrectionResult) return;
@@ -2361,6 +2713,188 @@
 省略 Body 第二句 (\`This experience stands out...\` 那一段) → 直接进 Conclusion。骨架仍然完整。`,
         date: new Date().toISOString(),
         source: '登登教育录播课截图',
+      },
+      {
+        id: 'seed-template-selector',
+        type: 'template',
+        title: '🧭 题型识别 → 选模板（必读速查）',
+        tags: ['速查', '题型识别', '模板选择', 'P1', '面试写作', '登登'],
+        content: `> ⚠️ **用错模板比不用模板还糟** — Conclusion 里出现"the incident"但全文没讲 incident，AI 一眼看穿。
+
+## 看到题目第一件事 → 判断题型
+
+| 题目特征 | 题型 | 用模板 |
+|----------|------|--------|
+| Tell me about / Describe a time / Talk about | **描述类（叙事）** | 描述类 顶配/简化版 |
+| Should X / Do you think X / Better A or B | **选择对比类（意见）** | 选择对比类 顶配/简化版 |
+| How does X affect / Effects of / What happens if | **影响类（因果）** | P2 影响类 顶配版 |
+| 看图片 + 描述 | **看图写句** | 看图写句 模板 |
+
+## 关键判断词
+
+✅ **描述类** 关键词: tell / describe / talk about / share / What was / Who is / a memorable / your favorite / the most exciting
+
+✅ **选择对比类** 关键词: should / better / agree / disagree / which one / would you rather / prefer / opinion / think
+
+✅ **影响类** 关键词: affect / impact / change / consequence / result in / how does / what happens
+
+## ❌ 经典错配（不要犯）
+
+**错配 1**: 看到"Should governments install more monitors?" → 用了**描述类**模板
+- 后果: Conclusion 写"the incident did expose me to..."，但全文没有任何 incident → 致命结构错
+- 正确: 用**选择对比类** "The contentious topic with regard to... has engendered... I am predisposed to advocate that..."
+
+**错配 2**: 看到"Tell me about a teacher you admire" → 用了**选择对比类**模板
+- 后果: 开头"The contentious topic... has engendered an impassioned altercation"，但描述老师不是争议话题 → 跑题
+- 正确: 用**描述类** "Despite the fact that it is challenging to depict and generalize..."
+
+## 🎯 30 秒决策流
+
+1. **题目里有 should / better / agree / opinion → 选择对比类**
+2. **题目里有 tell / describe / share a time / your favorite → 描述类**
+3. **题目里有 how / impact / effect / what happens → 影响类**
+4. **看不出来 / 混合的** → 默认用**描述类**（更通用，不会致命）
+
+## 📝 用模板前 5 秒确认
+
+在你按模板填空前，问自己：
+- **结尾这套话是否能 fit 我的内容？**
+- 如果模板说 "the incident did expose me to..."，但我没讲 incident → **换模板**
+- 如果模板说 "I am predisposed to advocate"，但题目没问"哪个更好" → **换模板**
+- 如果模板要"反方观点 + 我方观点"，但题目是开放叙事 → **换模板**`,
+        date: new Date().toISOString(),
+        source: '登登教育（题型识别整理）',
+      },
+      {
+        id: 'seed-p1-compare-top',
+        type: 'template',
+        title: '互动写作 P1 / 面试写作 · 选择对比类 · 顶配版（完整三段）',
+        tags: ['P1', '面试写作', '选择对比', '顶配版', '登登', '完整版'],
+        content: `> ✅ **适用题型**: Should X / Do you think X / Is A better than B / agree or disagree / would you prefer
+> ❌ **不适用**: Tell me about a time / Describe an event / share a memory（这些用描述类）
+
+## 三段式完整结构
+
+### 1️⃣ Introduction · 立场 + 反方一句 + 我方一句
+
+> The **contentious**<sup>争议性的</sup> topic **with regard to**<sup>关于</sup> [题目关键词 n/ving] has **engendered**<sup>引发</sup> an **impassioned**<sup>热烈的</sup> **altercation**<sup>争论</sup>. A **considerable**<sup>大量的</sup> number of people **contend**<sup>主张</sup> that [反方观点一句话], whereas I am **predisposed**<sup>倾向于</sup> to **advocate**<sup>支持</sup> that [正方观点一句话].
+
+### 2️⃣ Body · 论证我方观点
+
+> **Undeniably**<sup>不可否认</sup>, it is **indispensable**<sup>不可或缺的</sup> to **acknowledge**<sup>承认</sup> the **significance**<sup>重要性</sup> of [我方核心概念 n]. If [发生什么事 / 做什么事 / 不做什么事], then [会有什么结果]. (For example, [真实公司/人/学校名] [广为人知的行为/做法]…)
+
+### 3️⃣ Conclusion · 重申 + 升华
+
+> **Consequently**<sup>因此</sup>, the **prevailing**<sup>占主导的</sup> evidence **undoubtedly**<sup>无疑地</sup> **amplifies**<sup>放大</sup> the standpoint that [重申观点].
+
+## 填空规则
+
+- **题目关键词** (n/ving): 把题目核心抽成名词或动名词
+- **反方观点一句话** (句子): 简单描述对立观点
+- **正方观点一句话** (句子): 你支持的立场
+- **我方核心概念** (n): 我方观点抽出来的关键名词
+- **发生什么事 / 不做什么事**: 假设情境引出后果
+- **真实例子**: 公司 / 人物 / 学校 名（**禁止杜撰数据/年份/报告**）
+- **重申观点**: 用不同措辞复述立场
+
+## 真题填充示例
+
+**题目**: Should governments install more monitors in public places to reduce crime, even if it reduces personal privacy?
+
+**Intro**:
+> The contentious topic with regard to **the installation of public monitors** has engendered an impassioned altercation. A considerable number of people contend that **more monitors directly deter criminal behavior**, whereas I am predisposed to advocate that **excessive surveillance erodes personal privacy without proven benefits**.
+
+**Body**:
+> Undeniably, it is indispensable to acknowledge the significance of **personal privacy**. If governments install monitors in every corner of public space, then citizens lose the freedom to act without being observed, even when doing nothing wrong. For example, **Apple** has built its entire brand around user privacy precisely because privacy has become a fundamental modern need.
+
+**Conclusion**:
+> Consequently, the prevailing evidence undoubtedly amplifies the standpoint that **societies should prioritize trust and education over expanding surveillance infrastructure**.
+
+## ⏱️ 时态要点
+
+- Intro / Body / Conclusion **全程现在时**（讨论普遍话题）
+- 例子可用过去时（"Apple **launched** its first..."）— 但不要瞎编年份
+
+## 🎯 高级词汇清单（共 17 个）
+
+| 英文 | 中文 |
+|------|------|
+| contentious | 争议性的 |
+| with regard to | 关于 |
+| engender | 引发 |
+| impassioned | 热烈的 |
+| altercation | 争论 |
+| considerable | 大量的 |
+| contend | 主张 |
+| predisposed | 倾向于 |
+| advocate | 支持 |
+| undeniably | 不可否认地 |
+| indispensable | 不可或缺的 |
+| acknowledge | 承认 |
+| significance | 重要性 |
+| consequently | 因此 |
+| prevailing | 占主导的 |
+| amplify | 放大 |
+| undoubtedly | 无疑地 |
+
+## 💡 时间不够 → 简化版替换
+
+| 顶配版 | 简化版 |
+|--------|--------|
+| contentious | controversial |
+| engendered | caused |
+| impassioned altercation | heated debate |
+| predisposed to advocate | inclined to support |
+| Undeniably, it is indispensable | It's important |
+| Consequently, the prevailing evidence amplifies | In conclusion, |
+
+骨架不变，只换部分高级词。`,
+        date: new Date().toISOString(),
+        source: '登登教育录播课',
+      },
+      {
+        id: 'seed-describe-top-warning',
+        type: 'template',
+        title: '⚠️ 描述类模板 · 禁忌警告（必看）',
+        tags: ['描述类', '禁忌', '题型', '登登'],
+        content: `## ⚠️ 用描述类顶配版前必看
+
+描述类模板有一个**结构性陷阱**：
+
+### Conclusion 末句固定写
+
+> In conclusion, undoubtedly, **the incident** did expose me to [事件] and reshaped my perception of [题目主题].
+
+这句话**预设你 Body 段讲过一个具体 incident**（比如"It was unquestionably last year that…"）。
+
+### ❌ 致命错配
+
+如果你的题目是**意见类**（Should X / Do you think X / Compare A and B）：
+- Body 不会写具体 incident（因为题目不让你讲故事）
+- 但 Conclusion 还是写"the incident did expose me to..."
+- → AI 直接判致命结构错: **"通篇没提过任何 incident，结尾突然冒出来读者一脸懵"**
+
+### ✅ 何时用描述类
+
+题目里有这些信号才用：
+- "Tell me about a memorable…"
+- "Describe a time when…"
+- "Talk about a person who…"
+- "Share an experience that…"
+- "What was the most…"
+
+### ❌ 何时不用
+
+- "Should governments…" → 用**选择对比类**
+- "Do you agree that…" → 用**选择对比类**
+- "How does X affect…" → 用 P2 影响类
+- "Compare A and B" → 用**选择对比类**
+
+### 🛟 救急
+
+如果不确定题型，**默认用描述类的简化版**（不带 incident 强约束的）— 但你最好还是先看一遍"🧭 题型识别 → 选模板"那条笔记。`,
+        date: new Date().toISOString(),
+        source: '基于学生实测错配整理',
       },
     ];
 
@@ -2590,6 +3124,197 @@
     }
     bindToggle('toggle-output', 'output-content', 'toggle-output-arrow');
     bindToggle('toggle-model', 'model-content', 'toggle-model-arrow');
+
+    // ============= Practice mode (notes side-rail while writing) =============
+
+    let practiceModeOn = false;
+
+    // Mode → relevant tags for filtering notes
+    const MODE_TAG_MAP = {
+      interview:   ['面试写作', '写作面试', 'P1'],     // shares P1 templates
+      interactive: ['互动写作', 'P1', 'P2', '互动'],
+      academic:    ['学术写作', '论文', 'essay'],
+    };
+
+    function relevantNotesForMode(mode, search) {
+      const tags = MODE_TAG_MAP[mode] || [];
+      const q = (search || '').trim().toLowerCase();
+      const all = getNotes();
+      return all
+        .map(n => {
+          const tagMatch = (n.tags || []).some(t => tags.some(want => t.toLowerCase().includes(want.toLowerCase())));
+          const titleMatch = tags.some(want => (n.title || '').toLowerCase().includes(want.toLowerCase()));
+          const isTemplate = n.type === 'template' || n.type === 'phrase';
+          // Score: tag match > title match > generic templates
+          let priority = 0;
+          if (tagMatch) priority = 3;
+          else if (titleMatch) priority = 2;
+          else if (isTemplate) priority = 1;
+          return { n, priority };
+        })
+        .filter(x => x.priority > 0)
+        .filter(x => {
+          if (!q) return true;
+          const hay = `${x.n.title} ${x.n.content} ${(x.n.tags || []).join(' ')}`.toLowerCase();
+          return hay.includes(q);
+        })
+        .sort((a, b) => b.priority - a.priority || (b.n.date || '').localeCompare(a.n.date || ''));
+    }
+
+    function renderPracticeRail() {
+      if (!practiceModeOn) return;
+      const search = $('practice-rail-search').value;
+      const items = relevantNotesForMode(currentMode, search);
+      const modeNames = { interview: '🎤 写作面试', interactive: '💬 互动写作', academic: '📝 学术写作' };
+      $('practice-rail-mode').textContent = `${modeNames[currentMode] || currentMode} · ${items.length} 条相关`;
+
+      if (items.length === 0) {
+        $('practice-rail-list').innerHTML = `<div style="color: var(--ink-3); font-size: 12px; padding: 16px 8px; text-align: center;">没有相关笔记。<br>去笔记本添加 ${(MODE_TAG_MAP[currentMode]||[]).join(' / ')} 标签的模板</div>`;
+        return;
+      }
+
+      $('practice-rail-list').innerHTML = items.map(({ n }, i) => {
+        const t = NOTE_TYPES[n.type] || NOTE_TYPES.other;
+        const id = `pr-${i}-${n.id}`;
+        // Compact title — drop emoji/long prefix for narrow rail
+        const titleClean = (n.title || '(无标题)').replace(/^[✏️🎯📝📋📘💬🔤🗂️🎤🖼️🟢🔵]\s*/, '');
+        return `
+          <div class="wf-card soft" style="padding: 6px 8px;">
+            <div style="display: flex; align-items: center; gap: 4px; cursor: pointer;" onclick="togglePracticeNote('${id}')">
+              <span style="font-size: 9px; padding: 1px 5px; background: ${t.bg}; color: ${t.color}; border-radius: 999px; font-weight: 600; flex-shrink: 0;">${t.label.split(' ')[0]}</span>
+              <span style="font-size: 11px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 1;" title="${escapeHtml(n.title || '')}">${escapeHtml(titleClean)}</span>
+              <button class="wf-btn tiny ghost" style="padding: 1px 5px; font-size: 10px; box-shadow: none;" onclick="event.stopPropagation(); copyPracticeNote('${n.id}')" title="复制">📋</button>
+              <span id="${id}-arrow" style="color: var(--ink-3); font-size: 10px; flex-shrink: 0;">▼</span>
+            </div>
+            <div id="${id}" class="markdown" hidden style="margin-top: 6px; padding: 8px; border: 1px dashed var(--ink-4); border-radius: 4px; font-size: 11px; line-height: 1.55; max-height: 280px; overflow-y: auto; background: var(--paper);"></div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    window.togglePracticeNote = (id) => {
+      const el = $(id);
+      if (!el) return;
+      const arrow = $(id + '-arrow');
+      if (el.hidden) {
+        if (!el.dataset.rendered) {
+          // Find matching note
+          const noteId = id.split('-').slice(2).join('-');
+          const n = getNotes().find(x => x.id === noteId);
+          if (n) {
+            el.innerHTML = marked.parse(n.content || '');
+            el.dataset.rendered = '1';
+          }
+        }
+        el.hidden = false;
+        if (arrow) arrow.textContent = '▲';
+      } else {
+        el.hidden = true;
+        if (arrow) arrow.textContent = '▼';
+      }
+    };
+
+    window.copyPracticeNote = async (noteId) => {
+      const n = getNotes().find(x => x.id === noteId);
+      if (!n) return;
+      try {
+        await navigator.clipboard.writeText(n.content || '');
+      } catch (e) { alert('复制失败: ' + e.message); }
+    };
+
+    function togglePracticeMode(force) {
+      practiceModeOn = (force !== undefined) ? force : !practiceModeOn;
+      $('practice-rail').hidden = !practiceModeOn;
+
+      // Update grid columns to fit 3rd col when on (narrower practice rail — content scrolls internally)
+      const grid = $('main-grid');
+      if (practiceModeOn) {
+        grid.style.gridTemplateColumns = '1.8fr 0.55fr 0.9fr';
+      } else {
+        grid.style.gridTemplateColumns = '1.7fr 1fr';
+      }
+
+      $('practice-toggle').classList.toggle('accent', practiceModeOn);
+      $('practice-toggle').classList.toggle('ghost', !practiceModeOn);
+      $('practice-toggle').textContent = practiceModeOn ? '✓ 练习模式开' : '📚 练习模式';
+
+      if (practiceModeOn) renderPracticeRail();
+    }
+
+    $('practice-toggle').onclick = () => togglePracticeMode();
+    $('practice-rail-close').onclick = () => togglePracticeMode(false);
+    $('practice-rail-search').addEventListener('input', renderPracticeRail);
+
+    // Re-render when mode changes
+    const originalSetMode = setMode;
+    setMode = function(mode) {
+      originalSetMode(mode);
+      if (practiceModeOn) renderPracticeRail();
+    };
+
+    // ============= Extract review → notes =============
+
+    function extractSection(md, headingPattern) {
+      // Match "## <heading>...\n<body>" until next ## or EOF
+      const re = new RegExp(`^##\\s+${headingPattern}[^\\n]*\\n([\\s\\S]*?)(?=\\n##\\s|$)`, 'm');
+      const m = md.match(re);
+      return m ? m[1].trim() : null;
+    }
+
+    $('extract-to-notes').onclick = () => {
+      if (!lastResult) { alert('还没有精批结果'); return; }
+
+      const promptText = $('prompt').value.trim() || '(无题目)';
+      const promptShort = promptText.slice(0, 35) + (promptText.length > 35 ? '...' : '');
+      const dateShort = new Date().toLocaleString('zh-CN', { month: '2-digit', day: '2-digit' });
+      const dateTag = new Date().toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' });
+
+      // Strip <scores> tag from raw md
+      const md = lastResult.replace(/<scores>[\s\S]*?<\/scores>/, '').trim();
+
+      const targets = [
+        { pattern: '逐句改造',                  type: 'phrase', emoji: '✏️', tagName: '逐句改造',
+          headingTitle: '逐句改造（老师的金句对比）' },
+        { pattern: '你能直接抄走的[^\\n#]*句式',  type: 'phrase', emoji: '🎯', tagName: '万能句式',
+          headingTitle: '5 个万能句式（这一题专用）' },
+        { pattern: '115\\s*级改写',              type: 'exam',   emoji: '📝', tagName: '范文改写',
+          headingTitle: '115 级范文改写' },
+      ];
+
+      const notes = getNotes();
+      let added = 0;
+      const summaryLines = [];
+
+      targets.forEach(t => {
+        const body = extractSection(md, t.pattern);
+        if (!body) return;
+        const id = 'extract-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
+        notes.unshift({
+          id,
+          type: t.type,
+          title: `${t.emoji} ${t.tagName} · ${dateShort} · ${promptShort}`,
+          tags: [t.tagName, dateTag, '精批摘录'],
+          content: `**题目**: ${promptText}\n\n## ${t.headingTitle}\n\n${body}`,
+          date: new Date().toISOString(),
+          source: '精批摘录',
+        });
+        summaryLines.push(`✓ ${t.tagName}`);
+        added++;
+      });
+
+      if (added === 0) {
+        alert('在精批结果里没找到可摘录的段落（逐句改造 / 万能句式 / 115 改写）');
+        return;
+      }
+
+      setNotes(notes);
+      renderNotes();
+      $('extract-to-notes').textContent = `✓ 已加 ${added} 条`;
+      setTimeout(() => $('extract-to-notes').innerHTML = '📌 摘录到笔记', 2500);
+
+      // Auto-open notes panel so user sees them
+      if ($('notes-panel').hidden) $('toggle-notes').click();
+    };
 
     // ============= Init =============
     setMode('interview');
